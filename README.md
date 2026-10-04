@@ -22,7 +22,10 @@ AutomationAssistant/
         ├── java/com/example/automationassistant/
         │   ├── MainActivity.kt          single-activity Compose host
         │   ├── automation/OverlayAutomationService.kt
+        │   ├── automation/AutomationState.kt      status the UI observes
+        │   ├── automation/OverlayRules.kt         pure matching + debounce logic
         │   └── ui/AssistantScreen.kt    Material 3 dark single-screen UI
+        ├── test/java/.../automation/    JVM unit tests
         └── res/
             ├── xml/accessibility_service_config.xml
             ├── values/{strings,themes,colors}.xml
@@ -33,17 +36,26 @@ AutomationAssistant/
 ## Configuring dismiss targets
 
 Targets ship **empty** — the service is inert until you fill them in. Edit the two sets at
-the top of the companion object in
-`app/src/main/java/com/example/automationassistant/automation/OverlayAutomationService.kt`:
+the top of `app/src/main/java/com/example/automationassistant/automation/OverlayRules.kt`:
 
 ```kotlin
-private val dismissTargetPackages: Set<String> = emptySet()   // e.g. "com.example.blocker"
-private val dismissTargetClasses: Set<String> = emptySet()     // e.g. "android.app.Dialog"
+val targetPackages: Set<String> = emptySet()   // e.g. "com.example.blocker"
+val targetClasses: Set<String> = emptySet()     // e.g. "android.app.Dialog"
 ```
 
-The status card in the UI reports how many targets are configured. Matching is debounced
-by 400 ms so a dismissal can never feed back into itself, and the service never acts on
-its own package.
+Matching is pure and unit-tested (`OverlayRules.isTarget`), debounced by 400 ms via
+`OverlayRules.shouldDispatch` so a dismissal can never feed back into itself, and the
+service never acts on its own package. Live status is published through `AutomationState`,
+which is the only thing the UI reads — the Compose layer never touches the service class.
+
+## Tests
+
+```bash
+./gradlew test
+```
+
+JVM unit tests cover target matching, self-package exclusion, debounce gating and the
+default-empty configuration. CI runs them before every APK build.
 
 ## Build locally
 

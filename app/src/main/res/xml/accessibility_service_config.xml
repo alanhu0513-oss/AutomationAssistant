@@ -7,5 +7,5 @@
     android:canRetrieveWindowContent="true"
     android:canRequestFilterKeyEvents="false"
     android:canRequestTouchExplorationMode="false"
-    android:accessibilityFlags="flagDefault|flagReportViewIds"
+    android:accessibilityFlags="flagDefault"
     android:description="@string/accessibility_service_description" />

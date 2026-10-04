@@ -37,14 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.automationassistant.automation.OverlayAutomationService
+import com.example.automationassistant.automation.AutomationState
+import com.example.automationassistant.automation.OverlayRules
 
 @Composable
 fun AssistantScreen(onOpenAccessibilitySettings: () -> Unit) {
-    val isRunning by OverlayAutomationService.isRunning.collectAsState()
-    val enabled by OverlayAutomationService.enabled.collectAsState()
-    val lastDismissed by OverlayAutomationService.lastDismissed.collectAsState()
-    val targetCount = OverlayAutomationService.targetCount
+    val isRunning by AutomationState.isRunning.collectAsState()
+    val enabled by AutomationState.enabled.collectAsState()
+    val lastDismissed by AutomationState.lastDismissed.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -68,17 +68,20 @@ fun AssistantScreen(onOpenAccessibilitySettings: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            StatusCard(
-                isRunning = isRunning,
-                enabled = enabled,
-                targetCount = targetCount,
-                lastDismissed = lastDismissed,
-                onToggle = OverlayAutomationService::setEnabled
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                StatusCard(
+                    isRunning = isRunning,
+                    enabled = enabled,
+                    targetCount = OverlayRules.targetCount,
+                    lastDismissed = lastDismissed,
+                    onToggle = AutomationState::setEnabled
+                )
+            }
 
             FilledTonalButton(
                 onClick = onOpenAccessibilitySettings,
@@ -115,12 +118,6 @@ private fun StatusCard(
     onToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val statusLabel = when {
-        !isRunning -> "Inactive"
-        !enabled -> "Paused"
-        else -> "Active"
-    }
-
     val dotColor by animateColorAsState(
         targetValue = when {
             !isRunning -> Color(0xFF6B7280)
@@ -133,6 +130,7 @@ private fun StatusCard(
 
     val detailText = when {
         !isRunning -> "Service is not enabled in system settings"
+        !enabled -> "Paused — dismiss actions are on hold"
         targetCount == 0 -> "No dismiss targets configured"
         else -> "Watching $targetCount window target${if (targetCount == 1) "" else "s"}"
     }
@@ -164,7 +162,7 @@ private fun StatusCard(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = statusLabel,
+                        text = if (isRunning) "Active" else "Inactive",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
