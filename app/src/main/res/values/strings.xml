@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Automation Assistant</string>
+    <string name="accessibility_service_description">Monitors window-state changes and dismisses configured system overlays or blocking windows so an app under test is never left covered. No screen content is read, stored or transmitted.</string>
+</resources>
