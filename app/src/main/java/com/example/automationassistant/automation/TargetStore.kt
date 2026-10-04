@@ -6,51 +6,92 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Minimal persistence seam. Everything the UI or the service needs at runtime
+ * is a string, a string set or a boolean — keep it that way.
+ */
 interface KeyValueStore {
-    fun read(key: String): String?
-    fun write(key: String, value: String?)
+    fun readString(key: String): String?
+    fun writeString(key: String, value: String?)
+    fun readStringSet(key: String): Set<String>
+    fun writeStringSet(key: String, value: Set<String>)
+    fun readBoolean(key: String, default: Boolean): Boolean
+    fun writeBoolean(key: String, value: Boolean)
 }
 
-class InMemoryKeyValueStore(initial: Map<String, String> = emptyMap()) : KeyValueStore {
-    private val values: MutableMap<String, String> = initial.toMutableMap()
+/** Test double backed by plain maps. */
+class InMemoryKeyValueStore : KeyValueStore {
+    private val strings = mutableMapOf<String, String>()
+    private val stringSets = mutableMapOf<String, Set<String>>()
+    private val booleans = mutableMapOf<String, Boolean>()
 
-    override fun read(key: String): String? = values[key]
+    override fun readString(key: String): String? = strings[key]
 
-    override fun write(key: String, value: String?) {
-        if (value == null) {
-            values.remove(key)
-        } else {
-            values[key] = value
-        }
+    override fun writeString(key: String, value: String?) {
+        if (value == null) strings.remove(key) else strings[key] = value
+    }
+
+    override fun readStringSet(key: String): Set<String> = stringSets[key] ?: emptySet()
+
+    override fun writeStringSet(key: String, value: Set<String>) {
+        stringSets[key] = value
+    }
+
+    override fun readBoolean(key: String, default: Boolean): Boolean = booleans[key] ?: default
+
+    override fun writeBoolean(key: String, value: Boolean) {
+        booleans[key] = value
     }
 }
 
+/** Production store backed by SharedPreferences. */
 class SharedPreferencesStore(context: Context) : KeyValueStore {
 
     private val prefs: SharedPreferences =
         context.applicationContext.getSharedPreferences(TargetStore.PREFS_NAME, Context.MODE_PRIVATE)
 
-    override fun read(key: String): String? = prefs.getString(key, null)
+    override fun readString(key: String): String? = prefs.getString(key, null)
 
-    override fun write(key: String, value: String?) {
+    override fun writeString(key: String, value: String?) {
         prefs.edit().putString(key, value).apply()
+    }
+
+    override fun readStringSet(key: String): Set<String> = prefs.getStringSet(key, null) ?: emptySet()
+
+    override fun writeStringSet(key: String, value: Set<String>) {
+        prefs.edit().putStringSet(key, value).apply()
+    }
+
+    override fun readBoolean(key: String, default: Boolean): Boolean = prefs.getBoolean(key, default)
+
+    override fun writeBoolean(key: String, value: Boolean) {
+        prefs.edit().putBoolean(key, value).apply()
     }
 }
 
+/**
+ * Process-wide configuration for the game picker, onboarding and the
+ * notification-permission prompt — SharedPreferences-backed so the value
+ * survives process death and is checked on first launch.
+ */
 object TargetStore {
 
     const val PREFS_NAME = "automation_config"
-    const val KEY_TARGET_PROTECTED_APP = "target_protected_app"
-    const val KEY_INTERRUPTER_PACKAGE_NAME = "interrupter_package_name"
+    const val KEY_PROTECTED_APPS = "protected_apps"
+    const val KEY_IS_FIRST_LAUNCH = "is_first_launch"
+    const val KEY_NOTIFICATIONS_PROMPTED = "notifications_prompted"
 
     private val lock = Any()
     private var storage: KeyValueStore = InMemoryKeyValueStore()
 
-    private val _targetProtectedApp = MutableStateFlow<String?>(null)
-    val targetProtectedApp: StateFlow<String?> = _targetProtectedApp.asStateFlow()
+    private val _protectedApps = MutableStateFlow<Set<String>>(emptySet())
+    val protectedApps: StateFlow<Set<String>> = _protectedApps.asStateFlow()
 
-    private val _interrupterPackageName = MutableStateFlow<String?>(null)
-    val interrupterPackageName: StateFlow<String?> = _interrupterPackageName.asStateFlow()
+    private val _isFirstLaunch = MutableStateFlow(true)
+    val isFirstLaunch: StateFlow<Boolean> = _isFirstLaunch.asStateFlow()
+
+    private val _notificationsPrompted = MutableStateFlow(false)
+    val notificationsPrompted: StateFlow<Boolean> = _notificationsPrompted.asStateFlow()
 
     fun hydrate(context: Context) {
         hydrate(SharedPreferencesStore(context))
@@ -59,22 +100,36 @@ object TargetStore {
     fun hydrate(store: KeyValueStore) {
         synchronized(lock) {
             storage = store
-            _targetProtectedApp.value = store.read(KEY_TARGET_PROTECTED_APP)
-            _interrupterPackageName.value = store.read(KEY_INTERRUPTER_PACKAGE_NAME)
+            _protectedApps.value = store.readStringSet(KEY_PROTECTED_APPS)
+            _isFirstLaunch.value = store.readBoolean(KEY_IS_FIRST_LAUNCH, default = true)
+            _notificationsPrompted.value = store.readBoolean(KEY_NOTIFICATIONS_PROMPTED, default = false)
         }
     }
 
-    fun setTargetProtectedApp(value: String?) {
+    /** Adds or removes one app from the protected set; persists immediately. */
+    fun setAppProtected(packageName: String, protected: Boolean) {
         synchronized(lock) {
-            storage.write(KEY_TARGET_PROTECTED_APP, value)
-            _targetProtectedApp.value = value
+            val next = LinkedHashSet(_protectedApps.value)
+            if (protected) next += packageName else next -= packageName
+            val frozen: Set<String> = next.toSet()
+            storage.writeStringSet(KEY_PROTECTED_APPS, frozen)
+            _protectedApps.value = frozen
         }
     }
 
-    fun setInterrupterPackageName(value: String?) {
+    /** Called when the user finishes the setup slideshow. */
+    fun completeFirstLaunch() {
         synchronized(lock) {
-            storage.write(KEY_INTERRUPTER_PACKAGE_NAME, value)
-            _interrupterPackageName.value = value
+            storage.writeBoolean(KEY_IS_FIRST_LAUNCH, false)
+            _isFirstLaunch.value = false
+        }
+    }
+
+    /** The notification dialog is shown at most once per install. */
+    fun markNotificationsPrompted() {
+        synchronized(lock) {
+            storage.writeBoolean(KEY_NOTIFICATIONS_PROMPTED, true)
+            _notificationsPrompted.value = true
         }
     }
 }

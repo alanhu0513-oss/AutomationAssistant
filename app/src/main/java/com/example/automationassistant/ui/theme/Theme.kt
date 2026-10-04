@@ -5,33 +5,44 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val AppColorScheme = darkColorScheme(
-    primary = Color(0xFF8AB4F8),
-    onPrimary = Color(0xFF0B2A4A),
-    primaryContainer = Color(0xFF1B3A5C),
-    onPrimaryContainer = Color(0xFFD6E7FF),
-    secondary = Color(0xFF9AA0A6),
-    onSecondary = Color(0xFF1C1B1F),
-    background = Color(0xFF0E0F12),
-    onBackground = Color(0xFFE6E6E9),
-    surface = Color(0xFF16181C),
-    onSurface = Color(0xFFE6E6E9),
-    surfaceVariant = Color(0xFF1F2227),
-    onSurfaceVariant = Color(0xFFA8ADB4),
-    surfaceContainerLowest = Color(0xFF111317),
-    surfaceContainerLow = Color(0xFF181A1F),
-    surfaceContainer = Color(0xFF1B1E23),
-    surfaceContainerHigh = Color(0xFF1F2228),
-    surfaceContainerHighest = Color(0xFF25282F),
-    outline = Color(0xFF2C3037),
-    outlineVariant = Color(0xFF23262C),
-    error = Color(0xFFF2B8B5)
+/**
+ * Luxury dark aesthetic: a deep midnight-slate canvas with neon green/teal
+ * accents. Pure dark scheme — the product only ever ships in dark mode.
+ */
+private val MidnightScheme = darkColorScheme(
+    primary = Color(0xFF3DFFC4),
+    onPrimary = Color(0xFF03261C),
+    primaryContainer = Color(0xFF0B3D2E),
+    onPrimaryContainer = Color(0xFF9DF7E1),
+    secondary = Color(0xFF5EEAD4),
+    onSecondary = Color(0xFF03261C),
+    secondaryContainer = Color(0xFF113F37),
+    onSecondaryContainer = Color(0xFFA7F3E4),
+    tertiary = Color(0xFF7DD3FC),
+    onTertiary = Color(0xFF032033),
+    background = Color(0xFF080B10),
+    onBackground = Color(0xFFE7EDF3),
+    surface = Color(0xFF0E141B),
+    onSurface = Color(0xFFE7EDF3),
+    surfaceVariant = Color(0xFF151C25),
+    onSurfaceVariant = Color(0xFF93A1AF),
+    surfaceContainerLowest = Color(0xFF0A0F15),
+    surfaceContainerLow = Color(0xFF11171F),
+    surfaceContainer = Color(0xFF141B24),
+    surfaceContainerHigh = Color(0xFF19212B),
+    surfaceContainerHighest = Color(0xFF1F2833),
+    outline = Color(0xFF2A3542),
+    outlineVariant = Color(0xFF212B36),
+    error = Color(0xFFFF6B6B),
+    onError = Color(0xFF3A0A0A),
+    errorContainer = Color(0xFF4A1518),
+    onErrorContainer = Color(0xFFFFB4B4),
 )
 
 @Composable
 fun AutomationAssistantTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = AppColorScheme,
-        content = content
+        colorScheme = MidnightScheme,
+        content = content,
     )
 }

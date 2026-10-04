@@ -1,47 +1,77 @@
 <resources>
-    <string name="app_name">Automation Assistant</string>
-    <string name="accessibility_service_label">Overlay Automation</string>
-    <string name="accessibility_service_description">Monitors window-state changes and dismisses configured system overlays or blocking windows so an app under test is never left covered. No screen content is read, stored or transmitted.</string>
+    <string name="app_name">Gaming Shield</string>
+    <string name="accessibility_service_label">Shield Engine</string>
+    <string name="accessibility_service_description">Watches for system popups, time-limit blocks and parental-control screens that appear over the games you selected, and closes them automatically. Works on every Android brand. Nothing is read, stored or sent anywhere.</string>
 
-    <string name="screen_title">Automation Assistant</string>
-    <string name="screen_subtitle">Overlay dismissal engine</string>
+    <!-- Dashboard -->
+    <string name="dashboard_title">Gaming Shield</string>
 
-    <string name="status_active">Active</string>
-    <string name="status_inactive">Inactive</string>
-    <string name="status_service_off">Service is not enabled in system settings</string>
-    <string name="status_paused">Paused — dismiss actions are on hold</string>
-    <string name="status_missing_interrupter">Choose an interrupter package to dismiss overlays</string>
-    <string name="status_watching">Watching %1$s</string>
-    <string name="status_last_dismissed">Last dismissed: %1$s</string>
-    <string name="status_no_dismissals">No overlays dismissed yet</string>
-    <string name="status_last_window">Last window: %1$s</string>
-    <string name="status_no_window">No windows observed yet</string>
-    <string name="status_foreground">Foreground: %1$s</string>
-    <string name="status_foreground_unknown">Foreground: not observed yet</string>
+    <!-- Status card -->
+    <string name="status_standby_title">Engine Standby</string>
+    <string name="status_standby_hint">Slide the toggle below to wake the shield.</string>
+    <string name="status_waiting_title">No Game Selected</string>
+    <string name="status_waiting_hint">Tap a game below to arm protection.</string>
+    <string name="status_operational_title">Shield Operational</string>
+    <string name="status_operational_hint">Blocking screens over your games are closed automatically.</string>
+    <string name="status_blocked_count">Popups blocked: %1$d</string>
+    <string name="keep_running">Keep protection running</string>
 
-    <string name="button_open_accessibility">Open Accessibility Settings</string>
-    <string name="button_battery_settings">Battery optimization settings</string>
+    <!-- Sliding toggle -->
+    <string name="toggle_shield_on">Shield: On</string>
+    <string name="toggle_shield_off">Shield: Off</string>
+    <string name="toggle_hint">Opens your phone\'s accessibility settings</string>
 
-    <string name="config_protected_app">Protected app</string>
-    <string name="config_protected_app_hint">Keep this app in the foreground before overlays are dismissed</string>
-    <string name="config_interrupter">Interrupter package</string>
-    <string name="config_interrupter_hint">Overlay window package that gets dismissed with Back</string>
-    <string name="config_not_set">Not set</string>
-    <string name="config_choose">Choose</string>
-    <string name="config_clear">Clear</string>
+    <!-- Game picker -->
+    <string name="games_section_title">Choose Your Games</string>
+    <string name="games_search_hint">Find an app</string>
+    <string name="games_loading">Loading your apps…</string>
+    <string name="games_empty">No apps found</string>
+    <string name="games_no_results">No matching apps</string>
 
-    <string name="selector_search_hint">Search apps</string>
-    <string name="selector_loading">Loading apps…</string>
-    <string name="selector_empty">No matching apps</string>
-    <string name="selector_done">Done</string>
-    <string name="selector_badge_protected">Protected</string>
-    <string name="selector_badge_interrupter">Interrupter</string>
+    <!-- System capabilities & limits (transparency) -->
+    <string name="capabilities_section_title">System Capabilities &amp; Limits</string>
+    <string name="capability_perfect_label">What It Does Perfectly</string>
+    <string name="capability_perfect_body">Automatically detects and dismisses surface-level manufacturer time-limit overlays — like standard VIVO, Xiaomi, and Oppo popup timers — by instantly simulating a system \'Back\' command.</string>
+    <string name="capability_limit_label">What It Cannot Do</string>
+    <string name="capability_limit_body">It cannot bypass deep kernel-level locks or aggressive platform blocks (like Google Family Link) if the Android OS completely freezes background third-party processes or deactivates the Accessibility layer.</string>
+    <string name="capability_slow_label">The 1% Rule</string>
+    <string name="capability_slow_body">If your phone is severely lagging or low on RAM while playing heavy games like Delta Force, the shield might need a fraction of a second to react.</string>
 
-    <string name="update_checking">Checking for updates…</string>
-    <string name="update_available_title">Update available</string>
-    <string name="update_available_body">Version %1$s has been published</string>
-    <string name="update_open_page">Open download page</string>
-    <string name="update_up_to_date">You are up to date (%1$s)</string>
-    <string name="update_failed">Update check failed</string>
-    <string name="update_retry">Check again</string>
+    <!-- Update notice (only shown when a new version exists) -->
+    <string name="update_title">Update ready</string>
+    <string name="update_body">Version %1$s has been released.</string>
+    <string name="update_action">Update now</string>
+
+    <!-- Friendly error snackbars -->
+    <string name="error_apps_load">Couldn\'t load your apps. Please reopen the screen.</string>
+    <string name="error_engine">The shield hit a snag — logged and still running.</string>
+
+    <!-- Notification permission dialog -->
+    <string name="notif_dialog_title">Keep the shield alive</string>
+    <string name="notif_dialog_body">To ensure your shield stays active during long matches, please allow notifications.</string>
+    <string name="notif_dialog_allow">Allow</string>
+    <string name="notif_dialog_later">Maybe later</string>
+
+    <!-- Persistent foreground notification -->
+    <string name="notif_channel_name">Gaming Shield Active</string>
+    <string name="notif_title">Gaming Shield</string>
+    <string name="notif_text">Gaming Shield is active and monitoring.</string>
+
+    <!-- Onboarding · slide 1 -->
+    <string name="slide1_title">Your Gaming Shield</string>
+    <string name="slide1_body">This app acts like a background shield. It stays quietly alert while you play your favorite games, watching for sudden system time-limit blocks.</string>
+    <string name="slide1_next">Next</string>
+
+    <!-- Onboarding · slide 2 -->
+    <string name="slide2_title">Step 1: Grant Access</string>
+    <string name="slide2_body">To quickly dismiss blocking screens, the app needs permission. Tap the button below, find our app name under \'Installed Services\' or \'Accessibility\', and turn it ON.</string>
+    <string name="slide2_grant">Grant Settings Permission</string>
+    <string name="slide2_next">Next</string>
+
+    <!-- Onboarding · slide 3 -->
+    <string name="slide3_title">Step 2: Lock the Shield</string>
+    <string name="slide3_body">Android systems love to close background apps to save battery. To keep your shield active, open your phone\'s multitasking menu, press down on this app, and click the \'Lock\' padlock icon.</string>
+    <string name="slide3_finish">Let\'s Play!</string>
+
+    <string name="cd_app_icon">App icon</string>
 </resources>

@@ -1,7 +1,8 @@
 package com.example.automationassistant.automation
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -13,46 +14,71 @@ class TargetStoreTest {
     }
 
     @Test
-    fun `both keys are unset by default`() {
-        assertNull(TargetStore.targetProtectedApp.value)
-        assertNull(TargetStore.interrupterPackageName.value)
+    fun `defaults are empty protected set, pending first launch, unprompted notifications`() {
+        assertEquals(emptySet<String>(), TargetStore.protectedApps.value)
+        assertTrue(TargetStore.isFirstLaunch.value)
+        assertFalse(TargetStore.notificationsPrompted.value)
     }
 
     @Test
-    fun `writes update the flows and the backing store`() {
+    fun `toggling a game updates the flow and the backing store`() {
         val store = InMemoryKeyValueStore()
         TargetStore.hydrate(store)
 
-        TargetStore.setTargetProtectedApp("com.example.protected")
-        TargetStore.setInterrupterPackageName("com.example.interrupter")
+        TargetStore.setAppProtected("com.example.game", true)
+        TargetStore.setAppProtected("com.example.other", true)
+        assertEquals(setOf("com.example.game", "com.example.other"), TargetStore.protectedApps.value)
+        assertEquals(
+            setOf("com.example.game", "com.example.other"),
+            store.readStringSet(TargetStore.KEY_PROTECTED_APPS),
+        )
 
-        assertEquals("com.example.protected", TargetStore.targetProtectedApp.value)
-        assertEquals("com.example.interrupter", TargetStore.interrupterPackageName.value)
-        assertEquals("com.example.protected", store.read(TargetStore.KEY_TARGET_PROTECTED_APP))
-        assertEquals("com.example.interrupter", store.read(TargetStore.KEY_INTERRUPTER_PACKAGE_NAME))
+        TargetStore.setAppProtected("com.example.game", false)
+        assertEquals(setOf("com.example.other"), TargetStore.protectedApps.value)
+        assertEquals(
+            setOf("com.example.other"),
+            store.readStringSet(TargetStore.KEY_PROTECTED_APPS),
+        )
     }
 
     @Test
     fun `hydrate reloads persisted values`() {
-        val store = InMemoryKeyValueStore(
-            mapOf(
-                TargetStore.KEY_TARGET_PROTECTED_APP to "com.example.protected",
-                TargetStore.KEY_INTERRUPTER_PACKAGE_NAME to "com.example.interrupter",
-            ),
-        )
+        val store = InMemoryKeyValueStore()
+        store.writeStringSet(TargetStore.KEY_PROTECTED_APPS, setOf("com.example.game"))
+        store.writeBoolean(TargetStore.KEY_IS_FIRST_LAUNCH, false)
+        store.writeBoolean(TargetStore.KEY_NOTIFICATIONS_PROMPTED, true)
+
         TargetStore.hydrate(store)
-        assertEquals("com.example.protected", TargetStore.targetProtectedApp.value)
-        assertEquals("com.example.interrupter", TargetStore.interrupterPackageName.value)
+
+        assertEquals(setOf("com.example.game"), TargetStore.protectedApps.value)
+        assertFalse(TargetStore.isFirstLaunch.value)
+        assertTrue(TargetStore.notificationsPrompted.value)
     }
 
     @Test
-    fun `clearing a value removes the key`() {
-        val store = InMemoryKeyValueStore(
-            mapOf(TargetStore.KEY_TARGET_PROTECTED_APP to "com.example.protected"),
-        )
+    fun `completing first launch persists the flag`() {
+        val store = InMemoryKeyValueStore()
         TargetStore.hydrate(store)
-        TargetStore.setTargetProtectedApp(null)
-        assertNull(TargetStore.targetProtectedApp.value)
-        assertNull(store.read(TargetStore.KEY_TARGET_PROTECTED_APP))
+        assertTrue(TargetStore.isFirstLaunch.value)
+
+        TargetStore.completeFirstLaunch()
+
+        assertFalse(TargetStore.isFirstLaunch.value)
+        assertFalse(store.readBoolean(TargetStore.KEY_IS_FIRST_LAUNCH, default = true))
+    }
+
+    @Test
+    fun `notifications prompt is recorded so the dialog shows only once`() {
+        val store = InMemoryKeyValueStore()
+        TargetStore.hydrate(store)
+
+        TargetStore.markNotificationsPrompted()
+
+        assertTrue(TargetStore.notificationsPrompted.value)
+        assertTrue(store.readBoolean(TargetStore.KEY_NOTIFICATIONS_PROMPTED, default = false))
+
+        // Survives a re-hydrate (fresh process).
+        TargetStore.hydrate(store)
+        assertTrue(TargetStore.notificationsPrompted.value)
     }
 }

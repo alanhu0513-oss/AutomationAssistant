@@ -1,71 +1,138 @@
-# Automation Assistant
+# Universal Gaming Shield
 
-Jetpack Compose app that exposes an `AccessibilityService` used as a UI-automation aid:
-it watches window events and, when an overlay from a configured **interrupter package**
-appears over a configured **protected app**, performs `GLOBAL_ACTION_BACK` so the app
-under test is never left covered.
+**Stop surface-level game-time popups before they end your match.**
 
-No root. No screen content is read, stored or transmitted. The only network use is the
-update check (GitHub Releases), which you can watch fail-soft in the app.
+Universal Gaming Shield (in-app name: **Gaming Shield**) is a premium Android
+companion that watches your screen's window stack with a lean Accessibility
+service and — while one of your protected games is in the foreground — closes
+sudden system overlays the instant they appear, by simulating a single system
+`Back` command.
 
-## What is new in 1.1.0
+Midnight-slate glass interface. Neon-green pulse. Zero root. No screen content
+is ever read, stored, or transmitted.
 
-- **In-app application selector** — searchable list of installed launcher apps
-  (`PackageManager` + a `<queries>` MAIN/LAUNCHER intent; no `QUERY_ALL_PACKAGES`).
-- **SharedPreferences configuration** — no more editing source:
-  - `target_protected_app` — app that must be in the foreground before anything is dismissed
-  - `interrupter_package_name` — overlay package whose appearance triggers the dismiss
-- **Diagnostics on the status card** — foreground package plus the last-seen window
-  (`package/class`) the service observed.
-- **Update notifier** — checks the public GitHub Releases feed and links out to the
-  release page in the browser (no in-app install, no `REQUEST_INSTALL_PACKAGES`).
-- Battery-optimization shortcut so the service is less likely to be killed in the background.
+---
 
-## Configuration
+## Features
 
-Open the app, pick a value for each row:
+- 🎯 **Universal popup dismissal** — classifies windows by *type* (system
+  dialogs, accessibility overlays) and runtime system-app status, then
+  dismisses them over your protected games. Works across Samsung, Xiaomi,
+  vivo, OPPO, OnePlus, Pixel and every other standard Android OEM — with
+  **zero vendor package lists** in the source.
+- 🎮 **One-tap game protection** — a clean visual list of your installed apps;
+  flip the switch next to each title you want shielded. Icons and names only —
+  no package names, no technical inputs.
+- ✨ **Premium glass UI** — Material 3 dark theme, frosted glass cards, a
+  pulsing neon aura that shifts from *Engine Standby* to *Shield Operational*,
+  and a spring-loaded shield toggle.
+- 🚀 **Onboarding walkthrough** — a three-slide intro that grants the one
+  permission the app truly needs and shows you how to lock the app in memory.
+- 🔔 **Honest by design** — a permanent **System Capabilities & Limits** card
+  right on the dashboard tells you exactly what the shield does perfectly and
+  where Android draws the line. No overpromises, ever.
+- 📡 **Silent update check** — polls GitHub Releases and shows a card only when
+  a newer version actually exists. Fails soft; never blocks the UI.
+- 🔒 **Privacy-first** — the accessibility service observes *window metadata
+  only*. No screen content, keystrokes or personal data are captured, stored,
+  or sent anywhere. The only network call is the anonymous release check.
 
-| Row | Meaning |
-| --- | --- |
-| **Protected app** | Optional. When set, dismissals only fire while this app is the foreground window. |
-| **Interrupter package** | Required. The overlay package that gets dismissed with Back. |
+## How It Works
 
-Search in the selector, tap a row to assign it to the highlighted row (the row with the
-border tells you which slot you are filling), then disable the selector with **Done**.
-Picking the same package for both slots clears the other one.
+The decision logic is pure Kotlin and fully unit-tested; the Android layer is
+a thin adapter around it:
 
-The service stays inert until an interrupter package is configured, and the master
-switch on the status card gates all dismiss actions.
+| Module | Role |
+|---|---|
+| `automation/OverlayRules.kt` | Window classification, foreground adoption, dismissal decisions |
+| `automation/OverlayEngine.kt` | Immediate + coalesced trailing fire, 400 ms self-feedback debounce |
+| `automation/OverlayAutomationService.kt` | Accessibility event adapter, foreground notification, error surfacing |
+| `automation/TargetStore.kt` | Persisted protected-app set behind a testable key-value seam |
 
-## How dismissal works
+Dispatch is deliberately conservative: `GLOBAL_ACTION_BACK` only, never at the
+user's home launcher, never at the incoming-call dialer, never at the keyboard.
 
-Matching, foreground tracking and dispatch timing live in pure, unit-tested classes:
+## 📱 Supported Devices
 
-- `automation/OverlayRules.kt` — which events are tracked, when the foreground is adopted
-  (never the interrupter overlay, never our own package) and when a trigger may fire.
-- `automation/OverlayEngine.kt` — immediate first fire, then a single coalesced trailing
-  fire re-verified against the last observed window, debounced by 400 ms so a dismissal
-  can never feed back into itself. `GLOBAL_ACTION_BACK` only — no HOME fallback.
-- `automation/TargetStore.kt` — the two persisted keys plus a `KeyValueStore` seam that
-  unit tests replace with an in-memory implementation.
-- `automation/OverlayAutomationService.kt` — thin adapter: Android event in,
-  `EngineAction` out, status published through `AutomationState`.
-- `data/UpdateRules.kt` + `data/ReleaseFeed.kt` — pure tag comparison and feed parsing.
+| | |
+|---|---|
+| **OS** | Android 8.0 (API 26) → Android 15 (targetSdk 35) |
+| **UI** | Material 3, dark glass theme |
+| **Root** | Not required — standard Accessibility APIs only |
 
-The Compose layer never touches the service class; it only reads `AutomationState`
-and `TargetStore` flows.
+## ⚡ Quick Installation
 
-## Tests
+1. Download `app-debug.apk` from the [latest release](../../releases/latest)
+   and install it (allow *Install unknown apps* for your browser first).
+2. Launch **Gaming Shield** and swipe through the three intro slides — or tap
+   **Let's Play!** to jump straight in.
+3. **Step 1: Grant Access** — tap the button, find *Gaming Shield* under
+   **Installed Services / Accessibility**, and switch it on. This is the single
+   permission the app needs to observe and dismiss popups.
+4. **Step 2: Lock the Shield** — flip the switches next to your games in the
+   dashboard list. The status card turns to **Shield Operational**.
+5. *(Recommended)* Tap **Keep protection running** and exempt the app from
+   battery optimization so OEM task killers don't stop the service mid-match.
+
+That's it — the next time a manufacturer timer pops over your game, it closes
+itself.
+
+## ⚠️ Disclaimer & Technical Limitations
+
+We would rather be transparent than popular. **No third-party app can
+guarantee a 100% bypass rate**, and this one does not claim to. Here is the
+honest engineering picture:
+
+**What the shield handles perfectly.**
+Surface-level manufacturer time-limit overlays — the standard VIVO, Xiaomi and
+OPPO popup timers, routine permission prompts, and similar window-level
+interruptions — are detected and dismissed instantly, in the milliseconds after
+they appear. This is the overwhelming majority of in-game interruptions, and
+for those the shield is effectively seamless.
+
+**Why a 100% guarantee is impossible.**
+Android is a security-first operating system, and its protections are
+deliberately layered *below* what any ordinary app can reach:
+
+- **Kernel-level process freezing.** When the OS (or an aggressive platform
+  tool such as Google Family Link, or an OEM task killer) freezes background
+  third-party processes at the kernel level, no application code runs at all —
+  including ours. Android's own security model enforces this.
+- **Accessibility-layer deactivation.** If the platform temporarily
+  deactivates or revokes the Accessibility layer, the shield is blind by
+  design. It cannot (and should not) claw that back.
+- **Evolving security patches.** Each Android security patch and OEM update
+  may move these blocks deeper. An exploit-style bypass would break both the
+  OS security model and this app's no-root promise — so we deliberately do not
+  attempt one.
+
+Deep, kernel-level locks and aggressive platform blocks are therefore outside
+the app's reach. If the system fully commits to blocking you, the system wins.
+
+**The 1% rule.**
+If the phone is severely lagging or low on RAM while running a heavy title like
+*Delta Force*, the shield might need a fraction of a second longer to react.
+Close background apps, keep the phone charged, and reaction times stay in the
+instant range.
+
+**Honest expectation:** think of the shield as an elite surface-level defense,
+not an omnipotent override. It handles the common popup war so you can play in
+peace — and tells you plainly where the wall is.
+
+The same limits are summarized in-app, permanently, under
+**System Capabilities & Limits** on the dashboard.
+
+## Tests & Quality
 
 ```bash
-./gradlew test
+./gradlew test        # 54 JVM unit tests
+./gradlew lintDebug   # 0 errors
 ```
 
-JVM unit tests cover foreground/trigger rules, dispatch scheduling, app search,
-release-feed parsing, version comparison and preference storage. CI runs them before
-every APK build; lint runs too and fails the build on errors (currently 0).
+CI (GitHub Actions) runs tests, lint and an APK build on every push; lint
+errors fail the pipeline, so a green badge means a healthy build.
 
-## Build locally
+## Build Locally
 
 ```bash
 ./gradlew assembleDebug
@@ -73,34 +140,15 @@ every APK build; lint runs too and fails the build on errors (currently 0).
 ```
 
 Requires JDK 17 and an Android SDK with `platforms;android-35` +
-`build-tools;35.0.0`. Set `sdk.dir` in a local `local.properties` (git-ignored).
+`build-tools;35.0.0`. Set `sdk.dir` in a git-ignored `local.properties`.
 
-## Build on GitHub Actions
-
-Pushes to `main` run `.github/workflows/build-apk.yml`:
-
-1. **build** — JDK 17, `./gradlew test assembleDebug`, lint report, uploads
-   `AutomationAssistant-debug-apk`.
-2. **release** — runs only for tags matching `v*`, attaches the APK to a GitHub Release.
-
-The repository is public, so the phone can poll the update feed anonymously:
-
-```
-GET https://api.github.com/repos/alanhu0513-oss/AutomationAssistant/releases/latest
-```
-
-Create a downloadable link with:
+Pushes to `main` build via `.github/workflows/build-apk.yml`; tags matching
+`v*` attach the APK to a GitHub Release:
 
 ```bash
-git tag v1.1.0 && git push origin v1.1.0
+git tag v2.0.0 && git push origin v2.0.0
 ```
 
-## Install on a device
+---
 
-1. Download `app-debug.apk` from the release page.
-2. Settings → enable *Install unknown apps* for your browser → install.
-3. Open **Automation Assistant** → pick the protected app and the interrupter package.
-4. **Open Accessibility Settings** → find *Automation Assistant* → toggle **On** →
-   confirm the system dialog.
-5. Optionally tap **Battery optimization settings** and exempt the app.
-6. The status card flips to **Active**.
+*Universal Gaming Shield — premium protection, honest boundaries.*
