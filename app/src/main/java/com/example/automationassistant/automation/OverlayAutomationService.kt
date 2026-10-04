@@ -11,10 +11,16 @@ class OverlayAutomationService : AccessibilityService() {
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var serviceActive = false
-    private var lastDispatchAt = 0L
+    private var engine: OverlayEngine? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        TargetStore.hydrate(this)
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        engine = OverlayEngine(selfPackage = packageName)
         serviceActive = true
         AutomationState.setRunning(true)
         Log.i(TAG, "Accessibility service connected")
@@ -22,30 +28,60 @@ class OverlayAutomationService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null || !serviceActive) return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        if (!AutomationState.enabled.value) return
-
-        val pkg = event.packageName?.toString() ?: return
-        val cls = event.className?.toString()
-        if (!OverlayRules.isTarget(pkg, cls, selfPackage = packageName)) return
-
-        scheduleDismiss(pkg, cls)
+        val activeEngine = engine ?: return
+        val config = AutomationConfig(
+            enabled = AutomationState.enabled.value,
+            interrupterPackage = TargetStore.interrupterPackageName.value,
+            targetProtectedApp = TargetStore.targetProtectedApp.value,
+        )
+        val action = activeEngine.onEvent(
+            WindowEvent(
+                type = event.eventType,
+                packageName = event.packageName?.toString(),
+                className = event.className?.toString(),
+                at = SystemClock.uptimeMillis(),
+            ),
+            config,
+        )
+        AutomationState.publishWindow(activeEngine.lastWindow, activeEngine.foregroundPackage)
+        when (action) {
+            EngineAction.FIRE -> performDismiss(config.interrupterPackage)
+            EngineAction.SCHEDULE -> scheduleTrailingFire(config.interrupterPackage)
+            EngineAction.NONE -> Unit
+        }
     }
 
-    private fun scheduleDismiss(pkg: String, cls: String?) {
-        val now = SystemClock.uptimeMillis()
-        if (!OverlayRules.shouldDispatch(now, lastDispatchAt, DEBOUNCE_MS)) return
-        lastDispatchAt = now
+    private fun scheduleTrailingFire(interrupterPackage: String?) {
+        val activeEngine = engine ?: return
+        val fireAt = activeEngine.scheduledAt ?: return
+        val delay = (fireAt - SystemClock.uptimeMillis()).coerceAtLeast(0L)
+        mainHandler.postDelayed(
+            {
+                if (!serviceActive || interrupterPackage == null) return@postDelayed
+                if (activeEngine.lastWindow?.packageName != interrupterPackage) {
+                    activeEngine.cancelScheduled()
+                    return@postDelayed
+                }
+                performDismiss(interrupterPackage)
+            },
+            delay,
+        )
+    }
 
-        mainHandler.postDelayed({
-            if (!serviceActive) return@postDelayed
-            val handled = performGlobalAction(GLOBAL_ACTION_BACK) ||
-                performGlobalAction(GLOBAL_ACTION_HOME)
-            if (handled) {
-                AutomationState.setLastDismissed(pkg)
-                Log.i(TAG, "Dismissed window from $pkg (${cls ?: "unknown"})")
-            }
-        }, DEBOUNCE_MS)
+    private fun performDismiss(interrupterPackage: String?) {
+        val activeEngine = engine ?: return
+        if (!serviceActive || interrupterPackage == null) return
+        var handled = performGlobalAction(GLOBAL_ACTION_BACK)
+        if (!handled && serviceActive) {
+            handled = performGlobalAction(GLOBAL_ACTION_BACK)
+        }
+        activeEngine.onFired(SystemClock.uptimeMillis())
+        if (handled) {
+            AutomationState.setLastDismissed(interrupterPackage)
+            Log.i(TAG, "Dismissed overlay from $interrupterPackage")
+        } else {
+            Log.w(TAG, "GLOBAL_ACTION_BACK was not handled for $interrupterPackage")
+        }
     }
 
     override fun onInterrupt() {
@@ -55,13 +91,14 @@ class OverlayAutomationService : AccessibilityService() {
     override fun onDestroy() {
         mainHandler.removeCallbacksAndMessages(null)
         serviceActive = false
+        engine = null
         AutomationState.setRunning(false)
         AutomationState.clearLastDismissed()
+        AutomationState.clearWindows()
         super.onDestroy()
     }
 
     private companion object {
         private const val TAG = "OverlayAutomation"
-        private const val DEBOUNCE_MS = 400L
     }
 }

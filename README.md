@@ -1,52 +1,59 @@
 # Automation Assistant
 
-Minimal Jetpack Compose app that exposes an `AccessibilityService` used as a UI-automation
-aid: it watches `TYPE_WINDOW_STATE_CHANGED` events and, when a window from a configured
-package or class appears, performs `GLOBAL_ACTION_BACK` (falling back to
-`GLOBAL_ACTION_HOME`) so the app under test is never left covered.
+Jetpack Compose app that exposes an `AccessibilityService` used as a UI-automation aid:
+it watches window events and, when an overlay from a configured **interrupter package**
+appears over a configured **protected app**, performs `GLOBAL_ACTION_BACK` so the app
+under test is never left covered.
 
-No root. No network. No screen content is read, stored or transmitted.
+No root. No screen content is read, stored or transmitted. The only network use is the
+update check (GitHub Releases), which you can watch fail-soft in the app.
 
-## Project layout
+## What is new in 1.1.0
 
-```
-AutomationAssistant/
-├── .github/workflows/build-apk.yml      CI: builds + publishes the APK
-├── gradle/wrapper/                      Gradle 8.9 wrapper
-├── settings.gradle.kts
-├── build.gradle.kts                     AGP 8.7.3 · Kotlin 2.0.21
-└── app/
-    ├── build.gradle.kts                 minSdk 26 · targetSdk 35 · JDK 17
-    └── src/main/
-        ├── AndroidManifest.xml          declares the AccessibilityService
-        ├── java/com/example/automationassistant/
-        │   ├── MainActivity.kt          single-activity Compose host
-        │   ├── automation/OverlayAutomationService.kt
-        │   ├── automation/AutomationState.kt      status the UI observes
-        │   ├── automation/OverlayRules.kt         pure matching + debounce logic
-        │   └── ui/AssistantScreen.kt    Material 3 dark single-screen UI
-        ├── test/java/.../automation/    JVM unit tests
-        └── res/
-            ├── xml/accessibility_service_config.xml
-            ├── values/{strings,themes,colors}.xml
-            ├── drawable/ic_launcher_foreground.xml
-            └── mipmap-anydpi-v26/ic_launcher.xml
-```
+- **In-app application selector** — searchable list of installed launcher apps
+  (`PackageManager` + a `<queries>` MAIN/LAUNCHER intent; no `QUERY_ALL_PACKAGES`).
+- **SharedPreferences configuration** — no more editing source:
+  - `target_protected_app` — app that must be in the foreground before anything is dismissed
+  - `interrupter_package_name` — overlay package whose appearance triggers the dismiss
+- **Diagnostics on the status card** — foreground package plus the last-seen window
+  (`package/class`) the service observed.
+- **Update notifier** — checks the public GitHub Releases feed and links out to the
+  release page in the browser (no in-app install, no `REQUEST_INSTALL_PACKAGES`).
+- Battery-optimization shortcut so the service is less likely to be killed in the background.
 
-## Configuring dismiss targets
+## Configuration
 
-Targets ship **empty** — the service is inert until you fill them in. Edit the two sets at
-the top of `app/src/main/java/com/example/automationassistant/automation/OverlayRules.kt`:
+Open the app, pick a value for each row:
 
-```kotlin
-val targetPackages: Set<String> = emptySet()   // e.g. "com.example.blocker"
-val targetClasses: Set<String> = emptySet()     // e.g. "android.app.Dialog"
-```
+| Row | Meaning |
+| --- | --- |
+| **Protected app** | Optional. When set, dismissals only fire while this app is the foreground window. |
+| **Interrupter package** | Required. The overlay package that gets dismissed with Back. |
 
-Matching is pure and unit-tested (`OverlayRules.isTarget`), debounced by 400 ms via
-`OverlayRules.shouldDispatch` so a dismissal can never feed back into itself, and the
-service never acts on its own package. Live status is published through `AutomationState`,
-which is the only thing the UI reads — the Compose layer never touches the service class.
+Search in the selector, tap a row to assign it to the highlighted row (the row with the
+border tells you which slot you are filling), then disable the selector with **Done**.
+Picking the same package for both slots clears the other one.
+
+The service stays inert until an interrupter package is configured, and the master
+switch on the status card gates all dismiss actions.
+
+## How dismissal works
+
+Matching, foreground tracking and dispatch timing live in pure, unit-tested classes:
+
+- `automation/OverlayRules.kt` — which events are tracked, when the foreground is adopted
+  (never the interrupter overlay, never our own package) and when a trigger may fire.
+- `automation/OverlayEngine.kt` — immediate first fire, then a single coalesced trailing
+  fire re-verified against the last observed window, debounced by 400 ms so a dismissal
+  can never feed back into itself. `GLOBAL_ACTION_BACK` only — no HOME fallback.
+- `automation/TargetStore.kt` — the two persisted keys plus a `KeyValueStore` seam that
+  unit tests replace with an in-memory implementation.
+- `automation/OverlayAutomationService.kt` — thin adapter: Android event in,
+  `EngineAction` out, status published through `AutomationState`.
+- `data/UpdateRules.kt` + `data/ReleaseFeed.kt` — pure tag comparison and feed parsing.
+
+The Compose layer never touches the service class; it only reads `AutomationState`
+and `TargetStore` flows.
 
 ## Tests
 
@@ -54,8 +61,9 @@ which is the only thing the UI reads — the Compose layer never touches the ser
 ./gradlew test
 ```
 
-JVM unit tests cover target matching, self-package exclusion, debounce gating and the
-default-empty configuration. CI runs them before every APK build.
+JVM unit tests cover foreground/trigger rules, dispatch scheduling, app search,
+release-feed parsing, version comparison and preference storage. CI runs them before
+every APK build; lint runs too and fails the build on errors (currently 0).
 
 ## Build locally
 
@@ -71,21 +79,28 @@ Requires JDK 17 and an Android SDK with `platforms;android-35` +
 
 Pushes to `main` run `.github/workflows/build-apk.yml`:
 
-1. **build** — JDK 17 + `./gradlew assembleDebug`, uploads `AutomationAssistant-debug-apk`.
+1. **build** — JDK 17, `./gradlew test assembleDebug`, lint report, uploads
+   `AutomationAssistant-debug-apk`.
 2. **release** — runs only for tags matching `v*`, attaches the APK to a GitHub Release.
 
-The repository is private, so downloading the APK to a phone requires signing in to
-github.com in the mobile browser first (both Actions artifacts and release assets are
-auth-gated). Create a downloadable link with:
+The repository is public, so the phone can poll the update feed anonymously:
+
+```
+GET https://api.github.com/repos/alanhu0513-oss/AutomationAssistant/releases/latest
+```
+
+Create a downloadable link with:
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0
+git tag v1.1.0 && git push origin v1.1.0
 ```
 
 ## Install on a device
 
-1. Download `app-debug.apk` from the release or workflow run.
+1. Download `app-debug.apk` from the release page.
 2. Settings → enable *Install unknown apps* for your browser → install.
-3. Open **Automation Assistant** → **Open Accessibility Settings** → find
-   *Automation Assistant* → toggle **On** → confirm the system dialog.
-4. The status card flips to **Active**.
+3. Open **Automation Assistant** → pick the protected app and the interrupter package.
+4. **Open Accessibility Settings** → find *Automation Assistant* → toggle **On** →
+   confirm the system dialog.
+5. Optionally tap **Battery optimization settings** and exempt the app.
+6. The status card flips to **Active**.

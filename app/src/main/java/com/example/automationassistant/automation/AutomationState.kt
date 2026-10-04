@@ -15,6 +15,12 @@ object AutomationState {
     private val _lastDismissed = MutableStateFlow<String?>(null)
     val lastDismissed: StateFlow<String?> = _lastDismissed.asStateFlow()
 
+    private val _lastWindow = MutableStateFlow<WindowSnapshot?>(null)
+    val lastWindow: StateFlow<WindowSnapshot?> = _lastWindow.asStateFlow()
+
+    private val _foregroundPackage = MutableStateFlow<String?>(null)
+    val foregroundPackage: StateFlow<String?> = _foregroundPackage.asStateFlow()
+
     fun setEnabled(value: Boolean) {
         _enabled.value = value
     }
@@ -29,5 +35,15 @@ object AutomationState {
 
     internal fun clearLastDismissed() {
         _lastDismissed.value = null
+    }
+
+    internal fun publishWindow(window: WindowSnapshot?, foregroundPackage: String?) {
+        _lastWindow.value = window
+        _foregroundPackage.value = foregroundPackage
+    }
+
+    internal fun clearWindows() {
+        _lastWindow.value = null
+        _foregroundPackage.value = null
     }
 }

@@ -2,4 +2,46 @@
     <string name="app_name">Automation Assistant</string>
     <string name="accessibility_service_label">Overlay Automation</string>
     <string name="accessibility_service_description">Monitors window-state changes and dismisses configured system overlays or blocking windows so an app under test is never left covered. No screen content is read, stored or transmitted.</string>
+
+    <string name="screen_title">Automation Assistant</string>
+    <string name="screen_subtitle">Overlay dismissal engine</string>
+
+    <string name="status_active">Active</string>
+    <string name="status_inactive">Inactive</string>
+    <string name="status_service_off">Service is not enabled in system settings</string>
+    <string name="status_paused">Paused — dismiss actions are on hold</string>
+    <string name="status_missing_interrupter">Choose an interrupter package to dismiss overlays</string>
+    <string name="status_watching">Watching %1$s</string>
+    <string name="status_last_dismissed">Last dismissed: %1$s</string>
+    <string name="status_no_dismissals">No overlays dismissed yet</string>
+    <string name="status_last_window">Last window: %1$s</string>
+    <string name="status_no_window">No windows observed yet</string>
+    <string name="status_foreground">Foreground: %1$s</string>
+    <string name="status_foreground_unknown">Foreground: not observed yet</string>
+
+    <string name="button_open_accessibility">Open Accessibility Settings</string>
+    <string name="button_battery_settings">Battery optimization settings</string>
+
+    <string name="config_protected_app">Protected app</string>
+    <string name="config_protected_app_hint">Keep this app in the foreground before overlays are dismissed</string>
+    <string name="config_interrupter">Interrupter package</string>
+    <string name="config_interrupter_hint">Overlay window package that gets dismissed with Back</string>
+    <string name="config_not_set">Not set</string>
+    <string name="config_choose">Choose</string>
+    <string name="config_clear">Clear</string>
+
+    <string name="selector_search_hint">Search apps</string>
+    <string name="selector_loading">Loading apps…</string>
+    <string name="selector_empty">No matching apps</string>
+    <string name="selector_done">Done</string>
+    <string name="selector_badge_protected">Protected</string>
+    <string name="selector_badge_interrupter">Interrupter</string>
+
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_available_title">Update available</string>
+    <string name="update_available_body">Version %1$s has been published</string>
+    <string name="update_open_page">Open download page</string>
+    <string name="update_up_to_date">You are up to date (%1$s)</string>
+    <string name="update_failed">Update check failed</string>
+    <string name="update_retry">Check again</string>
 </resources>

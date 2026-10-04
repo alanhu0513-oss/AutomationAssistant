@@ -28,6 +28,25 @@ jobs:
       - name: Run unit tests and build debug APK
         run: ./gradlew test assembleDebug --stacktrace --no-daemon
 
+      - name: Run Android lint
+        run: ./gradlew lintDebug --stacktrace --no-daemon
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-*.html
+          if-no-files-found: ignore
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
