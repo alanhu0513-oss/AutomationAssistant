@@ -64,15 +64,19 @@ user's home launcher, never at the incoming-call dialer, never at the keyboard.
 
 1. Download `app-debug.apk` from the [latest release](../../releases/latest)
    and install it (allow *Install unknown apps* for your browser first).
-2. Launch **Gaming Shield** and swipe through the three intro slides — or tap
-   **Let's Play!** to jump straight in.
+2. Launch **Gaming Shield** and swipe through the three intro slides to the
+   **Let's Play!** button.
 3. **Step 1: Grant Access** — tap the button, find *Gaming Shield* under
-   **Installed Services / Accessibility**, and switch it on. This is the single
-   permission the app needs to observe and dismiss popups.
-4. **Step 2: Lock the Shield** — flip the switches next to your games in the
-   dashboard list. The status card turns to **Shield Operational**.
-5. *(Recommended)* Tap **Keep protection running** and exempt the app from
-   battery optimization so OEM task killers don't stop the service mid-match.
+   **Installed Services / Accessibility**, and switch it on. This is the one
+   permission the shield needs to observe and dismiss popups; everything else
+   below is optional.
+4. **Step 2: Lock the Shield** — open your phone's multitasking menu, press
+   and hold the app card, and tap the **Lock** padlock so task killers can't
+   stop the service mid-game.
+5. Back on the dashboard, flip the switches next to the games you want
+   protected — the status card turns to **Shield Operational**.
+6. *(Recommended)* Tap **Keep protection running** and exempt the app from
+   battery optimization so OEM battery savers leave it alone.
 
 That's it — the next time a manufacturer timer pops over your game, it closes
 itself.
