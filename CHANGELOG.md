@@ -4,6 +4,21 @@ All notable changes to Universal Gaming Shield. Versions follow
 [semantic versioning](https://semver.org/); releases are tagged `v*` and
 built automatically by GitHub Actions.
 
+## 2.2.0
+
+### Changed
+- **App renamed to Aegis** — new launcher name, dashboard title, notifications
+  and onboarding copy in English and Simplified Chinese.
+- **New package: `dev.aegis.shield`** (was `com.example.automationassistant`).
+  This is a *new application identity* — installs of older versions do not
+  upgrade in place; install this release fresh and re-select your games.
+- README, issue template and CI artifact names follow the new brand.
+
+### Verified
+- **Fully offline operation** — unit-tested: with no network, the update
+  check fails soft (`Failed` result, 5 s timeout) and never blocks or crashes
+  the UI. Detection, dismissal, logging and localization are all on-device.
+
 ## 2.1.0
 
 ### Added

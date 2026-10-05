@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Gaming Shield</string>
+    <string name="app_name">Aegis</string>
     <string name="accessibility_service_label">Shield 引擎</string>
     <string name="accessibility_service_description">监视出现在你所选游戏上方的系统弹窗、时限拦截和家长控制界面，并自动关闭它们。适用于所有 Android 品牌。不读取、不存储、不发送任何内容。</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_title">Gaming Shield</string>
+    <string name="dashboard_title">Aegis</string>
 
     <!-- Status card -->
     <string name="status_standby_title">引擎待机</string>
@@ -73,18 +73,18 @@
     <string name="brand_funtouch">vivo / iQOO（Funtouch 与 OriginOS）</string>
     <string name="brand_stock">原生 Android / Pixel</string>
     <string name="health_miui_1">打开「手机管家」→ 电量 → 省电模式</string>
-    <string name="health_miui_2">找到 Gaming Shield 并设置为「无限制」</string>
-    <string name="health_miui_3">设置 → 应用设置 → 应用管理 → Gaming Shield → 开启「自启动」</string>
-    <string name="health_coloros_1">设置 → 应用 → 应用管理 → Gaming Shield</string>
+    <string name="health_miui_2">找到 Aegis 并设置为「无限制」</string>
+    <string name="health_miui_3">设置 → 应用设置 → 应用管理 → Aegis → 开启「自启动」</string>
+    <string name="health_coloros_1">设置 → 应用 → 应用管理 → Aegis</string>
     <string name="health_coloros_2">耗电保护 → 开启「允许后台运行」</string>
     <string name="health_coloros_3">启动管理 → 允许「自动启动」与「后台运行」</string>
     <string name="health_oneui_1">设置 → 电池 → 后台使用限制</string>
-    <string name="health_oneui_2">打开「休眠应用」→「永不休眠的应用」→ 添加 Gaming Shield</string>
+    <string name="health_oneui_2">打开「休眠应用」→「永不休眠的应用」→ 添加 Aegis</string>
     <string name="health_oneui_3">关闭「闲置应用自动休眠」对护盾的限制</string>
     <string name="health_funtouch_1">打开「i管家」→ 省电模式（或设置 → 电池）</string>
-    <string name="health_funtouch_2">后台耗电管理 → Gaming Shield → 允许</string>
-    <string name="health_funtouch_3">加速白名单 → 添加 Gaming Shield</string>
-    <string name="health_stock_1">设置 → 应用 → Gaming Shield → 电池</string>
+    <string name="health_funtouch_2">后台耗电管理 → Aegis → 允许</string>
+    <string name="health_funtouch_3">加速白名单 → 添加 Aegis</string>
+    <string name="health_stock_1">设置 → 应用 → Aegis → 电池</string>
     <string name="health_stock_2">将「电池用量」设置为「不受限制」</string>
     <string name="health_stock_3">关闭电池优化，让护盾永不休眠</string>
 
@@ -104,12 +104,12 @@
     <string name="notif_dialog_later">稍后再说</string>
 
     <!-- Persistent foreground notification -->
-    <string name="notif_channel_name">Gaming Shield 运行中</string>
-    <string name="notif_title">Gaming Shield</string>
-    <string name="notif_text">Gaming Shield 正在运行并持续监控。</string>
+    <string name="notif_channel_name">Aegis 运行中</string>
+    <string name="notif_title">Aegis</string>
+    <string name="notif_text">Aegis 正在运行并持续监控。</string>
 
     <!-- Onboarding · slide 1 -->
-    <string name="slide1_title">你的 Gaming Shield</string>
+    <string name="slide1_title">你的 Aegis</string>
     <string name="slide1_body">本应用是一面后台护盾。当你畅玩喜爱的游戏时，它会安静地保持警惕，留意突然出现的系统时限拦截。</string>
     <string name="slide1_next">下一步</string>
 

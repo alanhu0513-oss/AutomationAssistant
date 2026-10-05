@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Gaming Shield</string>
+    <string name="app_name">Aegis</string>
     <string name="accessibility_service_label">Shield Engine</string>
     <string name="accessibility_service_description">Watches for system popups, time-limit blocks and parental-control screens that appear over the games you selected, and closes them automatically. Works on every Android brand. Nothing is read, stored or sent anywhere.</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_title">Gaming Shield</string>
+    <string name="dashboard_title">Aegis</string>
 
     <!-- Status card -->
     <string name="status_standby_title">Engine Standby</string>
@@ -73,18 +73,18 @@
     <string name="brand_funtouch">vivo / iQOO (Funtouch &amp; OriginOS)</string>
     <string name="brand_stock">Stock Android / Pixel</string>
     <string name="health_miui_1">Open the Security app → Battery → Battery saver</string>
-    <string name="health_miui_2">Find Gaming Shield and set it to No restrictions</string>
-    <string name="health_miui_3">Settings → Apps → Manage apps → Gaming Shield → turn on Autostart</string>
-    <string name="health_coloros_1">Settings → Apps → App management → Gaming Shield</string>
+    <string name="health_miui_2">Find Aegis and set it to No restrictions</string>
+    <string name="health_miui_3">Settings → Apps → Manage apps → Aegis → turn on Autostart</string>
+    <string name="health_coloros_1">Settings → Apps → App management → Aegis</string>
     <string name="health_coloros_2">Battery usage → enable Allow background activity</string>
     <string name="health_coloros_3">Launch settings → allow Auto-launch and Background running</string>
     <string name="health_oneui_1">Settings → Battery → Background usage limits</string>
-    <string name="health_oneui_2">Open Sleeping apps → Never sleeping apps → add Gaming Shield</string>
+    <string name="health_oneui_2">Open Sleeping apps → Never sleeping apps → add Aegis</string>
     <string name="health_oneui_3">Turn off Put unused apps to sleep for the shield</string>
     <string name="health_funtouch_1">Open i Manager → Power save (or Settings → Battery)</string>
-    <string name="health_funtouch_2">Background power consumption → Gaming Shield → Allow</string>
-    <string name="health_funtouch_3">Acceleration whitelist → add Gaming Shield</string>
-    <string name="health_stock_1">Settings → Apps → Gaming Shield → Battery</string>
+    <string name="health_funtouch_2">Background power consumption → Aegis → Allow</string>
+    <string name="health_funtouch_3">Acceleration whitelist → add Aegis</string>
+    <string name="health_stock_1">Settings → Apps → Aegis → Battery</string>
     <string name="health_stock_2">Set Battery usage to Unrestricted</string>
     <string name="health_stock_3">Disable Battery optimization so the shield is never dozed</string>
 
@@ -104,12 +104,12 @@
     <string name="notif_dialog_later">Maybe later</string>
 
     <!-- Persistent foreground notification -->
-    <string name="notif_channel_name">Gaming Shield Active</string>
-    <string name="notif_title">Gaming Shield</string>
-    <string name="notif_text">Gaming Shield is active and monitoring.</string>
+    <string name="notif_channel_name">Aegis Active</string>
+    <string name="notif_title">Aegis</string>
+    <string name="notif_text">Aegis is active and monitoring.</string>
 
     <!-- Onboarding · slide 1 -->
-    <string name="slide1_title">Your Gaming Shield</string>
+    <string name="slide1_title">Your Aegis</string>
     <string name="slide1_body">This app acts like a background shield. It stays quietly alert while you play your favorite games, watching for sudden system time-limit blocks.</string>
     <string name="slide1_next">Next</string>
 

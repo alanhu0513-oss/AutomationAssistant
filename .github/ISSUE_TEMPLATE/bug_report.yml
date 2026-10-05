@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve Gaming Shield! Device details matter a lot —
+        Thanks for helping improve Aegis! Device details matter a lot —
         most issues in this app are OEM-specific.
   - type: input
     id: device

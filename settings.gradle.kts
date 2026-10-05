@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AutomationAssistant"
+rootProject.name = "Aegis"
 include(":app")

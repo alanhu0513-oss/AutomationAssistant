@@ -1,8 +1,8 @@
-# Universal Gaming Shield
+# Aegis
 
 **Stop surface-level game-time popups before they end your match.**
 
-Universal Gaming Shield (in-app name: **Gaming Shield**) is a premium Android
+Aegis is a premium Android
 companion that watches your screen's window stack with a lean Accessibility
 service and — while one of your protected games is in the foreground — closes
 sudden system overlays the instant they appear, by simulating a single system
@@ -33,6 +33,10 @@ is ever read, stored, or transmitted.
   where Android draws the line. No overpromises, ever.
 - 📡 **Silent update check** — polls GitHub Releases and shows a card only when
   a newer version actually exists. Fails soft; never blocks the UI.
+- ✈️ **Fully offline by design** — detection, dismissal, logging, strictness
+  and preview mode all run on-device. The only network call is the optional
+  update check, which times out in 5 s and fails silently without a
+  connection.
 - 📜 **Shield Activity log** — every dismissed popup is recorded locally:
   what appeared, over which game, and when. Observable proof of work, with a
   one-tap clear.
@@ -81,9 +85,9 @@ user's home launcher, never at the incoming-call dialer, never at the keyboard.
 
 1. Download `app-debug.apk` from the [latest release](../../releases/latest)
    and install it (allow *Install unknown apps* for your browser first).
-2. Launch **Gaming Shield** and swipe through the three intro slides to the
+2. Launch **Aegis** and swipe through the three intro slides to the
    **Let's Play!** button.
-3. **Step 1: Grant Access** — tap the button, find *Gaming Shield* under
+3. **Step 1: Grant Access** — tap the button, find *Aegis* under
    **Installed Services / Accessibility**, and switch it on. This is the one
    permission the shield needs to observe and dismiss popups; everything else
    below is optional.
@@ -183,4 +187,4 @@ git tag v2.1.0 && git push origin v2.1.0
 
 ---
 
-*Universal Gaming Shield — premium protection, honest boundaries.*
+*Aegis — premium protection, honest boundaries.*
