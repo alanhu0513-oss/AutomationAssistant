@@ -8,7 +8,7 @@ import kotlinx.serialization.json.contentOrNull
 object ReleaseFeed {
 
     const val LATEST_RELEASE_URL =
-        "https://api.github.com/repos/alanhu0513-oss/AutomationAssistant/releases/latest"
+        "https://api.github.com/repos/alanhu0513-oss/aegis/releases/latest"
 
     fun parseLatest(body: String, currentVersion: String): UpdateCheckResult {
         val root = runCatching { Json.parseToJsonElement(body) }.getOrNull()

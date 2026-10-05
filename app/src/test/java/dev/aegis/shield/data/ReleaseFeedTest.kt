@@ -9,7 +9,7 @@ class ReleaseFeedTest {
     private val currentVersion = "1.0.1"
 
     private fun feed(tag: String = "v1.1.0"): String =
-        """{"tag_name":"$tag","html_url":"https://github.com/alanhu0513-oss/AutomationAssistant/releases/tag/$tag"}"""
+        """{"tag_name":"$tag","html_url":"https://github.com/alanhu0513-oss/aegis/releases/tag/$tag"}"""
 
     @Test
     fun `newer release is reported as available`() {
@@ -19,7 +19,7 @@ class ReleaseFeedTest {
         assertEquals("v1.1.0", info.tagName)
         assertEquals("1.1.0", info.versionName)
         assertEquals(
-            "https://github.com/alanhu0513-oss/AutomationAssistant/releases/tag/v1.1.0",
+            "https://github.com/alanhu0513-oss/aegis/releases/tag/v1.1.0",
             info.releaseUrl,
         )
     }
