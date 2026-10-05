@@ -32,29 +32,27 @@ class AppRepository(
 
     private fun queryApps(): List<AppEntry> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        return packageManager.queryIntentActivities(intent, 0)
+        val candidates = packageManager.queryIntentActivities(intent, 0)
             .mapNotNull { resolveInfo ->
                 val activityInfo = resolveInfo.activityInfo ?: return@mapNotNull null
                 val appInfo = activityInfo.applicationInfo ?: return@mapNotNull null
-                val packageName = activityInfo.packageName
-                if (packageName == selfPackage) return@mapNotNull null
-                if (appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) return@mapNotNull null
-                val label = resolveInfo.loadLabel(packageManager)?.toString()
-                    ?.ifBlank { packageName }
-                    ?: packageName
-                AppEntry(
-                    packageName = packageName,
-                    label = label,
-                    icon = iconOf(appInfo),
+                CandidateApp(
+                    packageName = activityInfo.packageName,
+                    label = resolveInfo.loadLabel(packageManager)?.toString().orEmpty(),
+                    isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
                 )
             }
-            .distinctBy { it.packageName }
-            .sortedBy { it.label.lowercase() }
+        return AppSelection.select(candidates, selfPackage).map { candidate ->
+            AppEntry(
+                packageName = candidate.packageName,
+                label = candidate.label,
+                icon = runCatching {
+                    packageManager.getApplicationIcon(candidate.packageName)
+                        .toIconBitmap(ICON_SIZE_PX)
+                }.getOrNull(),
+            )
+        }
     }
-
-    private fun iconOf(appInfo: ApplicationInfo): ImageBitmap? = runCatching {
-        packageManager.getApplicationIcon(appInfo).toIconBitmap(ICON_SIZE_PX)
-    }.getOrNull()
 
     /** Draws any drawable into a fixed square, preserving its aspect ratio. */
     private fun Drawable.toIconBitmap(size: Int): ImageBitmap {

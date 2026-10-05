@@ -81,4 +81,63 @@ class TargetStoreTest {
         TargetStore.hydrate(store)
         assertTrue(TargetStore.notificationsPrompted.value)
     }
+
+    @Test
+    fun `strictness defaults to normal for every game`() {
+        assertEquals(Strictness.NORMAL, TargetStore.strictnessFor("com.example.game"))
+        assertEquals(Strictness.NORMAL, TargetStore.strictnessFor(null))
+        assertEquals(emptyMap<String, Strictness>(), TargetStore.strictnessLevels.value)
+    }
+
+    @Test
+    fun `strictness persists per game across a re-hydrate`() {
+        val store = InMemoryKeyValueStore()
+        TargetStore.hydrate(store)
+
+        TargetStore.setStrictness("com.example.game", Strictness.GENTLE)
+        TargetStore.setStrictness("com.example.other", Strictness.STRICT)
+
+        assertEquals(Strictness.GENTLE, TargetStore.strictnessFor("com.example.game"))
+        assertEquals(Strictness.STRICT, TargetStore.strictnessFor("com.example.other"))
+        assertEquals(Strictness.NORMAL, TargetStore.strictnessFor("com.example.third"))
+
+        TargetStore.hydrate(store)
+
+        assertEquals(Strictness.GENTLE, TargetStore.strictnessFor("com.example.game"))
+        assertEquals(Strictness.STRICT, TargetStore.strictnessFor("com.example.other"))
+    }
+
+    @Test
+    fun `malformed strictness entries are dropped without breaking the rest`() {
+        val store = InMemoryKeyValueStore()
+        store.writeStringSet(
+            TargetStore.KEY_STRICTNESS_LEVELS,
+            setOf("com.good=gentle", "no_separator", "=no_package", "com.bad=turbo"),
+        )
+
+        TargetStore.hydrate(store)
+
+        assertEquals(Strictness.GENTLE, TargetStore.strictnessFor("com.good"))
+        // Unknown level value falls back to normal instead of crashing.
+        assertEquals(Strictness.NORMAL, TargetStore.strictnessFor("com.bad"))
+        assertEquals(2, TargetStore.strictnessLevels.value.size)
+    }
+
+    @Test
+    fun `preview mode defaults off and persists when enabled`() {
+        val store = InMemoryKeyValueStore()
+        TargetStore.hydrate(store)
+        assertFalse(TargetStore.previewMode.value)
+
+        TargetStore.setPreviewMode(true)
+
+        assertTrue(TargetStore.previewMode.value)
+        assertTrue(store.readBoolean(TargetStore.KEY_PREVIEW_MODE, default = false))
+
+        TargetStore.hydrate(store)
+        assertTrue(TargetStore.previewMode.value)
+
+        TargetStore.setPreviewMode(false)
+        assertFalse(TargetStore.previewMode.value)
+    }
 }

@@ -5,14 +5,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,9 +21,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -40,19 +35,19 @@ import com.example.automationassistant.R
 import com.example.automationassistant.automation.AutomationState
 import com.example.automationassistant.automation.ShieldLog
 import com.example.automationassistant.automation.TargetStore
-import com.example.automationassistant.data.AppEntry
 import com.example.automationassistant.data.AppRepository
-import com.example.automationassistant.data.AppSearch
 import com.example.automationassistant.data.UpdateCheckResult
 import com.example.automationassistant.data.UpdateChecker
 import com.example.automationassistant.data.UpdateInfo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * The premium dashboard: glass status card → sliding shield toggle → the
- * visual game picker → (optional) update notice. Every failure path lands in
- * a styled snackbar instead of a crash.
+ * The premium dashboard: glass status card → sliding shield toggle → device
+ * health → preview mode → game picker → transparency → shield log →
+ * (optional) update notice. Every failure path lands in a styled snackbar
+ * instead of a crash.
  */
 @Composable
 fun DashboardScreen(
@@ -70,31 +65,21 @@ fun DashboardScreen(
     val notificationsPrompted by TargetStore.notificationsPrompted.collectAsState()
     val serviceEverEnabled by TargetStore.serviceEverEnabled.collectAsState()
     val shieldLogEntries by ShieldLog.entries.collectAsState()
+    val strictnessLevels by TargetStore.strictnessLevels.collectAsState()
+    val previewEnabled by TargetStore.previewMode.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val appsErrorText = stringResource(R.string.error_apps_load)
 
-    var apps by remember { mutableStateOf<List<AppEntry>>(emptyList()) }
-    var appsLoading by remember { mutableStateOf(true) }
-    var query by rememberSaveable { mutableStateOf("") }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     var dialogHandled by rememberSaveable { mutableStateOf(false) }
 
+    val gamesState = rememberGamesState(repository) { message ->
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
+
     LaunchedEffect(Unit) {
-        appsLoading = true
-        val loaded = withContext(Dispatchers.IO) { repository.loadUserApps() }
-        loaded.fold(
-            onSuccess = {
-                apps = it
-                appsLoading = false
-            },
-            onFailure = {
-                appsLoading = false
-                // Load failures are already logged inside the repository.
-                snackbarHostState.showSnackbar(appsErrorText)
-            },
-        )
         val result = withContext(Dispatchers.IO) { UpdateChecker().check(BuildConfig.VERSION_NAME) }
         if (result is UpdateCheckResult.Available) {
             updateInfo = result.info
@@ -113,8 +98,6 @@ fun DashboardScreen(
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
         PackageManager.PERMISSION_GRANTED
     val showNotifDialog = !notificationsGranted && !notificationsPrompted && !dialogHandled
-
-    val filteredApps = remember(apps, query) { AppSearch.filter(apps, query) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -179,64 +162,25 @@ fun DashboardScreen(
                 DeviceHealthCard(onOpenBatterySettings = onOpenBatterySettings)
             }
 
-            item(key = "games_header") {
-                Text(
-                    text = stringResource(R.string.games_section_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
+            item(key = "preview") {
+                PreviewToggleCard(
+                    enabled = previewEnabled,
+                    onToggle = { TargetStore.setPreviewMode(it) },
                 )
             }
 
-            item(key = "search") {
-                SearchField(
-                    query = query,
-                    onQueryChange = { query = it },
-                )
-            }
-
-            when {
-                appsLoading -> item(key = "loading") {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Neon.Green,
-                        )
-                        Text(
-                            text = stringResource(R.string.games_loading),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-
-                filteredApps.isEmpty() -> item(key = "empty") {
-                    Text(
-                        text = stringResource(
-                            if (query.isBlank()) R.string.games_empty
-                            else R.string.games_no_results,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-
-                else -> items(filteredApps, key = { it.packageName }) { entry ->
-                    GameRow(
-                        entry = entry,
-                        isProtected = entry.packageName in protectedApps,
-                        onClick = {
-                            TargetStore.setAppProtected(
-                                entry.packageName,
-                                entry.packageName !in protectedApps,
-                            )
-                        },
-                    )
-                }
-            }
+            gamesItems(
+                state = gamesState,
+                protectedApps = protectedApps,
+                strictnessLevels = strictnessLevels,
+                onToggleProtected = { packageName, protected ->
+                    TargetStore.setAppProtected(packageName, protected)
+                },
+                onCycleStrictness = { packageName ->
+                    val current = TargetStore.strictnessFor(packageName)
+                    TargetStore.setStrictness(packageName, current.next())
+                },
+            )
 
             item(key = "capabilities") {
                 SystemCapabilitiesCard()

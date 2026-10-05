@@ -1,0 +1,60 @@
+name: Bug report
+description: Something didn't work as expected on your device
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Gaming Shield! Device details matter a lot —
+        most issues in this app are OEM-specific.
+  - type: input
+    id: device
+    attributes:
+      label: Device brand and model
+      description: e.g. Xiaomi Redmi Note 12, Samsung Galaxy S23, vivo V27
+      placeholder: Brand + model
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Android version and OS skin
+      description: e.g. Android 14 / HyperOS 1.0, Android 13 / One UI 6
+      placeholder: Android version + skin
+    validations:
+      required: true
+  - type: input
+    id: appversion
+    attributes:
+      label: App version
+      description: Found under the dashboard header or in Settings → App info.
+      placeholder: e.g. 2.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: what
+    attributes:
+      label: What went wrong?
+      options:
+        - Popups are not being dismissed
+        - Shield stops working after a while
+        - Shield offline banner appears constantly
+        - Game list / search problem
+        - Preview or activity log issue
+        - Crash or UI glitch
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened? What did you expect?
+      description: Steps to reproduce help a lot. Did the Shield Activity log record anything?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines (optional)
+      description: `adb logcat -s GamingShield` output, if you have it.
+      render: shell

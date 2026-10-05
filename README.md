@@ -33,6 +33,20 @@ is ever read, stored, or transmitted.
   where Android draws the line. No overpromises, ever.
 - 📡 **Silent update check** — polls GitHub Releases and shows a card only when
   a newer version actually exists. Fails soft; never blocks the UI.
+- 📜 **Shield Activity log** — every dismissed popup is recorded locally:
+  what appeared, over which game, and when. Observable proof of work, with a
+  one-tap clear.
+- 🛡️ **Device survival guide** — detects your brand (Xiaomi, OPPO, Samsung,
+  vivo, stock…) and shows the exact battery-menu path that keeps the shield
+  alive, plus an offline watchdog banner if Android ever switches the
+  accessibility service off behind your back.
+- ⚙️ **Quick Settings tile** — one pull-down shows whether the shield is
+  running; tap to jump straight to the app or to accessibility settings.
+- 👁️ **Preview mode** — watch and log every would-be dismissal *without*
+  pressing Back. See exactly what the shield would block before trusting it.
+- 🎚️ **Per-game reaction levels** — Normal, Gentle or Strict per title; the
+  debounce adapts to the game you are playing.
+- 🌍 **English & 简体中文** — fully localized interface.
 - 🔒 **Privacy-first** — the accessibility service observes *window metadata
   only*. No screen content, keystrokes or personal data are captured, stored,
   or sent anywhere. The only network call is the anonymous release check.
@@ -45,9 +59,12 @@ a thin adapter around it:
 | Module | Role |
 |---|---|
 | `automation/OverlayRules.kt` | Window classification, foreground adoption, dismissal decisions |
-| `automation/OverlayEngine.kt` | Immediate + coalesced trailing fire, 400 ms self-feedback debounce |
-| `automation/OverlayAutomationService.kt` | Accessibility event adapter, foreground notification, error surfacing |
-| `automation/TargetStore.kt` | Persisted protected-app set behind a testable key-value seam |
+| `automation/OverlayEngine.kt` | Immediate + coalesced trailing fire, per-game debounce |
+| `automation/OverlayAutomationService.kt` | Accessibility event adapter and error surfacing |
+| `automation/ShieldNotification.kt` | specialUse foreground notification handshake |
+| `automation/WindowResolvers.kt` | Dynamic launcher/dialer/systemness lookups (brand-agnostic) |
+| `automation/ShieldLog.kt` | Capped, persistent, local-only dismiss history |
+| `automation/TargetStore.kt` | Persisted settings behind a testable key-value seam |
 
 Dispatch is deliberately conservative: `GLOBAL_ACTION_BACK` only, never at the
 user's home launcher, never at the incoming-call dialer, never at the keyboard.
@@ -126,10 +143,21 @@ peace — and tells you plainly where the wall is.
 The same limits are summarized in-app, permanently, under
 **System Capabilities & Limits** on the dashboard.
 
+## 🔐 Privacy
+
+- **Nothing leaves the device.** No accounts, no analytics, no trackers, no
+  screen capture — the service reads window *metadata* (package name, window
+  type) and nothing else.
+- The shield log, protected-game list and settings live only in the app's
+  private storage; cloud backup and device-to-device transfer are explicitly
+  disabled.
+- The single network call is an anonymous GitHub Releases lookup for the
+  update card; it fails soft and carries no identifiers.
+
 ## Tests & Quality
 
 ```bash
-./gradlew test        # 54 JVM unit tests
+./gradlew test        # 84 JVM unit tests
 ./gradlew lintDebug   # 0 errors
 ```
 
@@ -150,7 +178,7 @@ Pushes to `main` build via `.github/workflows/build-apk.yml`; tags matching
 `v*` attach the APK to a GitHub Release:
 
 ```bash
-git tag v2.0.0 && git push origin v2.0.0
+git tag v2.1.0 && git push origin v2.1.0
 ```
 
 ---

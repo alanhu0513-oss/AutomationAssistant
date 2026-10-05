@@ -1,23 +1,14 @@
 package com.example.automationassistant.automation
 
 import android.accessibilityservice.AccessibilityService
-import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
-import android.content.pm.ServiceInfo
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityWindowInfo
-import androidx.core.app.NotificationChannelCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import com.example.automationassistant.R
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The only actor that touches the system: listens for window events, resolves
@@ -41,15 +32,14 @@ class OverlayAutomationService : AccessibilityService() {
     private var engine: OverlayEngine? = null
     private var homePackages: Set<String> = emptySet()
     private var exemptPackages: Set<String> = emptySet()
-
-    /** pkg → FLAG_SYSTEM, resolved once per package. */
-    private val systemnessCache = ConcurrentHashMap<String, Boolean>()
+    private lateinit var resolvers: WindowResolvers
 
     override fun onCreate() {
         super.onCreate()
         runCatching {
-            homePackages = resolveHomePackages()
-            exemptPackages = resolveExemptPackages()
+            resolvers = WindowResolvers(packageManager)
+            homePackages = resolvers.homePackages()
+            exemptPackages = resolvers.exemptPackages()
             Log.i(TAG, "Resolved homes=$homePackages exempt=$exemptPackages")
         }.onFailure { Log.e(TAG, "Service init failed", it) }
     }
@@ -61,7 +51,10 @@ class OverlayAutomationService : AccessibilityService() {
                 selfPackage = packageName,
                 homePackages = homePackages,
                 exemptPackages = exemptPackages,
-                isSystemPackage = ::isSystemPackage,
+                isSystemPackage = resolvers::isSystemPackage,
+                debounceFor = { foreground ->
+                    TargetStore.strictnessFor(foreground).debounceMs
+                },
             )
             serviceActive = true
             AutomationState.setRunning(true)
@@ -126,20 +119,33 @@ class OverlayAutomationService : AccessibilityService() {
             activeEngine.cancelScheduled()
             return
         }
-        var handled = performGlobalAction(GLOBAL_ACTION_BACK)
-        if (!handled && serviceActive) {
+        val preview = TargetStore.previewMode.value
+        var handled = false
+        if (!preview) {
             handled = performGlobalAction(GLOBAL_ACTION_BACK)
+            if (!handled && serviceActive) {
+                handled = performGlobalAction(GLOBAL_ACTION_BACK)
+            }
         }
         activeEngine.onFired(SystemClock.uptimeMillis())
-        if (handled) {
-            AutomationState.recordBlocked()
-            recordDismissal(
-                gamePackage = activeEngine.foregroundPackage,
-                overlayPackage = activeEngine.lastWindow?.packageName,
-            )
-            Log.i(TAG, "Dismissed system layer over ${activeEngine.foregroundPackage}")
-        } else {
-            Log.w(TAG, "GLOBAL_ACTION_BACK was not handled")
+        when {
+            preview -> {
+                recordDismissal(
+                    gamePackage = activeEngine.foregroundPackage,
+                    overlayPackage = activeEngine.lastWindow?.packageName,
+                    preview = true,
+                )
+                Log.i(TAG, "Preview: logged system layer over ${activeEngine.foregroundPackage}")
+            }
+            handled -> {
+                AutomationState.recordBlocked()
+                recordDismissal(
+                    gamePackage = activeEngine.foregroundPackage,
+                    overlayPackage = activeEngine.lastWindow?.packageName,
+                )
+                Log.i(TAG, "Dismissed system layer over ${activeEngine.foregroundPackage}")
+            }
+            else -> Log.w(TAG, "GLOBAL_ACTION_BACK was not handled")
         }
     }
 
@@ -147,27 +153,25 @@ class OverlayAutomationService : AccessibilityService() {
      * Appends one entry to the local shield log — what popped up, over which
      * game, and when. Failures here must never affect the dismissal itself.
      */
-    private fun recordDismissal(gamePackage: String?, overlayPackage: String?) {
+    private fun recordDismissal(
+        gamePackage: String?,
+        overlayPackage: String?,
+        preview: Boolean = false,
+    ) {
         runCatching {
             ShieldLog.record(
                 LogEntry(
                     atEpochMillis = System.currentTimeMillis(),
                     overlayPackage = overlayPackage.orEmpty(),
-                    overlayLabel = overlayPackage?.let(::labelOf)
+                    overlayLabel = overlayPackage?.let(resolvers::labelOf)
                         ?: getString(R.string.log_unknown_app),
-                    gameLabel = gamePackage?.let(::labelOf)
+                    gameLabel = gamePackage?.let(resolvers::labelOf)
                         ?: getString(R.string.log_unknown_app),
+                    preview = preview,
                 ),
             )
         }.onFailure { Log.w(TAG, "Failed to record dismissal", it) }
     }
-
-    /** Display name for a package, falling back to the package itself. */
-    private fun labelOf(packageName: String): String = runCatching {
-        packageManager
-            .getApplicationLabel(packageManager.getApplicationInfo(packageName, 0))
-            .toString()
-    }.getOrDefault(packageName)
 
     // region Dynamic, brand-agnostic resolvers
 
@@ -188,86 +192,16 @@ class OverlayAutomationService : AccessibilityService() {
         }
     }
 
-    /** Runtime `FLAG_SYSTEM` check with a per-package cache — no brand lists. */
-    private fun isSystemPackage(packageName: String): Boolean {
-        systemnessCache[packageName]?.let { return it }
-        val result = try {
-            val info = packageManager.getApplicationInfo(packageName, 0)
-            (info.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
-                (info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
-        } catch (t: Throwable) {
-            Log.e(TAG, "Systemness check failed for $packageName", t)
-            false
-        }
-        systemnessCache[packageName] = result
-        return result
-    }
-
-    /** The launcher package(s); guards against dismissing the home screen. */
-    private fun resolveHomePackages(): Set<String> {
-        val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        return runCatching {
-            packageManager.queryIntentActivities(homeIntent, 0)
-                .mapNotNull { it.activityInfo?.packageName }
-                .toSet()
-        }.getOrElse { emptySet() }
-    }
-
-    /** The default dialer; an incoming call must never be dismissed. */
-    private fun resolveExemptPackages(): Set<String> {
-        return runCatching {
-            val resolved = packageManager.resolveActivity(Intent(Intent.ACTION_DIAL), 0)
-            setOfNotNull(resolved?.activityInfo?.packageName)
-        }.getOrElse { emptySet() }
-    }
-
     // endregion
 
     // region Persistent foreground notification
 
     /**
-     * `specialUse` foreground service with a non-dismissible notification so
-     * Android keeps the process alive across long matches. Declared in the
-     * manifest with a PROPERTY_SPECIAL_USE_FGS_SUBTYPE justification.
+     * Delegates to [ShieldNotification]; a notification hiccup is surfaced
+     * as a friendly error instead of crashing the engine.
      */
     private fun startShieldNotification() {
-        runCatching {
-            val manager = NotificationManagerCompat.from(this)
-            val channel = NotificationChannelCompat
-                .Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_MIN)
-                .setName(getString(R.string.notif_channel_name))
-                .setShowBadge(false)
-                .build()
-            manager.createNotificationChannel(channel)
-
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification_shield)
-                .setContentTitle(getString(R.string.notif_title))
-                .setContentText(getString(R.string.notif_text))
-                .setOngoing(true)
-                .setSilent(true)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .build()
-
-            // specialUse is the correct type on Android 14+ (declared + justified
-            // in the manifest); older platforms only know dataSync, which is
-            // harmless there (no time limits before Android 15).
-            val serviceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-            } else {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            }
-            ServiceCompat.startForeground(
-                this,
-                NOTIFICATION_ID,
-                notification,
-                serviceType,
-            )
-            Log.i(TAG, "Shield notification active")
-        }.onFailure {
+        runCatching { ShieldNotification.startForeground(this) }.onFailure {
             Log.e(TAG, "Could not start shield notification", it)
             // The engine still runs — surface a friendly notice instead of crashing.
             AutomationState.publishError(getString(R.string.error_engine))
@@ -291,7 +225,5 @@ class OverlayAutomationService : AccessibilityService() {
 
     private companion object {
         private const val TAG = "GamingShield"
-        private const val CHANNEL_ID = "gaming_shield_active"
-        private const val NOTIFICATION_ID = 4213
     }
 }

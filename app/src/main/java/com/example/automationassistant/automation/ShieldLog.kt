@@ -23,6 +23,7 @@ data class LogEntry(
     val overlayPackage: String,
     val overlayLabel: String,
     val gameLabel: String,
+    val preview: Boolean = false,
 )
 
 /**
@@ -77,6 +78,7 @@ object ShieldLog {
                         put("pkg", JsonPrimitive(e.overlayPackage))
                         put("lbl", JsonPrimitive(e.overlayLabel))
                         put("game", JsonPrimitive(e.gameLabel))
+                        put("prev", JsonPrimitive(e.preview))
                     },
                 )
             }
@@ -95,6 +97,7 @@ object ShieldLog {
                         overlayPackage = obj["pkg"]?.jsonPrimitive?.content ?: "",
                         overlayLabel = obj["lbl"]?.jsonPrimitive?.content ?: "",
                         gameLabel = obj["game"]?.jsonPrimitive?.content ?: "",
+                        preview = obj["prev"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false,
                     )
                 }.getOrNull()
             }

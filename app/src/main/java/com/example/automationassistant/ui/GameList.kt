@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.automationassistant.R
+import com.example.automationassistant.automation.Strictness
 import com.example.automationassistant.data.AppEntry
 
 /** Friendly "Find an app" filter — label-only, never package names. */
@@ -59,14 +60,17 @@ fun SearchField(
 }
 
 /**
- * Sleek rounded list item: high-resolution icon + app name, nothing else.
- * A smooth elevation lift and a neon gradient edge mark it as protected.
+ * Sleek rounded list item: high-resolution icon + app name. A smooth
+ * elevation lift and a neon gradient edge mark it as protected; protected
+ * rows also carry a tappable reaction-level chip (Normal / Gentle / Strict).
  */
 @Composable
 fun GameRow(
     entry: AppEntry,
     isProtected: Boolean,
+    strictness: Strictness,
     onClick: () -> Unit,
+    onCycleStrictness: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(20.dp)
@@ -129,6 +133,43 @@ fun GameRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
+        )
+        if (isProtected) {
+            StrictnessChip(strictness = strictness, onCycle = onCycleStrictness)
+        }
+    }
+}
+
+/** Small tappable pill showing (and cycling) the reaction level of a protected game. */
+@Composable
+private fun StrictnessChip(strictness: Strictness, onCycle: () -> Unit) {
+    val color = when (strictness) {
+        Strictness.NORMAL -> Neon.Teal
+        Strictness.GENTLE -> Neon.Green
+        Strictness.STRICT -> Neon.Amber
+    }
+    val label = stringResource(
+        when (strictness) {
+            Strictness.NORMAL -> R.string.strictness_normal
+            Strictness.GENTLE -> R.string.strictness_gentle
+            Strictness.STRICT -> R.string.strictness_strict
+        },
+    )
+    Box(
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(color.copy(alpha = 0.12f))
+            .border(1.dp, color.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+            .clickable(onClick = onCycle)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = color,
         )
     }
 }

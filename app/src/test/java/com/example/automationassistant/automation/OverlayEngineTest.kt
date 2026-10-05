@@ -210,4 +210,47 @@ class OverlayEngineTest {
         assertEquals(EngineAction.NONE, engine.onEvent(event(pkg = null, at = 5_000L), protectedGames))
         assertNull(engine.lastWindow)
     }
+
+    @Test
+    fun `debounce is resolved per foreground game so strictness levels apply`() {
+        val engine = OverlayEngine(
+            selfPackage = self,
+            homePackages = setOf(home),
+            exemptPackages = setOf(dialer),
+            isSystemPackage = { it in systemPackages },
+            debounceFor = { pkg -> if (pkg == game) 1_000L else 400L },
+        )
+        engine.inGame(at = 1_000L)
+
+        assertEquals(
+            EngineAction.FIRE,
+            engine.onEvent(event(pkg = "android", at = 5_000L, windowType = systemWindow), protectedGames),
+        )
+
+        // Gentle level: 1000 ms debounce → scheduled, not fired, at +100 ms.
+        assertEquals(
+            EngineAction.SCHEDULE,
+            engine.onEvent(event(pkg = "android", at = 5_100L, windowType = systemWindow), protectedGames),
+        )
+        assertEquals(6_000L, engine.scheduledAt)
+    }
+
+    @Test
+    fun `strict level re-arms after a very short debounce`() {
+        val engine = OverlayEngine(
+            selfPackage = self,
+            homePackages = setOf(home),
+            exemptPackages = setOf(dialer),
+            isSystemPackage = { it in systemPackages },
+            debounceFor = { 100L },
+        )
+        engine.inGame(at = 1_000L)
+        engine.onEvent(event(pkg = "android", at = 5_000L, windowType = systemWindow), protectedGames)
+
+        assertEquals(
+            EngineAction.FIRE,
+            engine.onEvent(event(pkg = "android", at = 5_101L, windowType = systemWindow), protectedGames),
+        )
+        assertEquals(5_101L, engine.lastFiredAt)
+    }
 }

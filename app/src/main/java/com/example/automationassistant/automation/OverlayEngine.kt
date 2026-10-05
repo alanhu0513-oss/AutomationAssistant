@@ -16,13 +16,15 @@ package com.example.automationassistant.automation
  * @param homePackages launcher package(s); adoptable, never dismissed.
  * @param exemptPackages packages that must survive (default dialer).
  * @param isSystemPackage runtime `FLAG_SYSTEM` resolver, already cached by the caller.
+ * @param debounceFor debounce window for the CURRENT foreground game — lets
+ *   per-game [Strictness] levels slow one title down without touching another.
  */
 class OverlayEngine(
     private val selfPackage: String,
     private val homePackages: Set<String>,
     private val exemptPackages: Set<String>,
     private val isSystemPackage: (String) -> Boolean,
-    private val debounceMs: Long = DEFAULT_DEBOUNCE_MS,
+    private val debounceFor: (String?) -> Long = { DEFAULT_DEBOUNCE_MS },
 ) {
 
     var lastWindow: WindowSnapshot? = null
@@ -103,8 +105,9 @@ class OverlayEngine(
 
     private fun resolveDispatch(now: Long): EngineAction {
         if (scheduledAt != null) return EngineAction.NONE
-        if (firedOnce && !OverlayRules.shouldDispatch(now, lastFiredAt, debounceMs)) {
-            val fireAt = lastFiredAt + debounceMs
+        val debounce = debounceFor(foregroundPackage).coerceAtLeast(0L)
+        if (firedOnce && !OverlayRules.shouldDispatch(now, lastFiredAt, debounce)) {
+            val fireAt = lastFiredAt + debounce
             scheduledAt = fireAt
             return EngineAction.SCHEDULE
         }

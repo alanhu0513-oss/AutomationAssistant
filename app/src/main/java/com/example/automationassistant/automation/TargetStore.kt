@@ -81,6 +81,8 @@ object TargetStore {
     const val KEY_IS_FIRST_LAUNCH = "is_first_launch"
     const val KEY_NOTIFICATIONS_PROMPTED = "notifications_prompted"
     const val KEY_SERVICE_EVER_ENABLED = "service_ever_enabled"
+    const val KEY_STRICTNESS_LEVELS = "strictness_levels"
+    const val KEY_PREVIEW_MODE = "preview_mode"
 
     private val lock = Any()
     private var storage: KeyValueStore = InMemoryKeyValueStore()
@@ -97,6 +99,12 @@ object TargetStore {
     private val _serviceEverEnabled = MutableStateFlow(false)
     val serviceEverEnabled: StateFlow<Boolean> = _serviceEverEnabled.asStateFlow()
 
+    private val _strictnessLevels = MutableStateFlow<Map<String, Strictness>>(emptyMap())
+    val strictnessLevels: StateFlow<Map<String, Strictness>> = _strictnessLevels.asStateFlow()
+
+    private val _previewMode = MutableStateFlow(false)
+    val previewMode: StateFlow<Boolean> = _previewMode.asStateFlow()
+
     fun hydrate(context: Context) {
         hydrate(SharedPreferencesStore(context))
     }
@@ -108,6 +116,8 @@ object TargetStore {
             _isFirstLaunch.value = store.readBoolean(KEY_IS_FIRST_LAUNCH, default = true)
             _notificationsPrompted.value = store.readBoolean(KEY_NOTIFICATIONS_PROMPTED, default = false)
             _serviceEverEnabled.value = store.readBoolean(KEY_SERVICE_EVER_ENABLED, default = false)
+            _strictnessLevels.value = decodeStrictness(store.readStringSet(KEY_STRICTNESS_LEVELS))
+            _previewMode.value = store.readBoolean(KEY_PREVIEW_MODE, default = false)
         }
     }
 
@@ -145,4 +155,37 @@ object TargetStore {
             _serviceEverEnabled.value = true
         }
     }
+
+    /** Per-game reaction level; anything absent or unknown is [Strictness.NORMAL]. */
+    fun strictnessFor(packageName: String?): Strictness =
+        _strictnessLevels.value[packageName] ?: Strictness.NORMAL
+
+    fun setStrictness(packageName: String, strictness: Strictness) {
+        synchronized(lock) {
+            val next = _strictnessLevels.value + (packageName to strictness)
+            _strictnessLevels.value = next
+            storage.writeStringSet(
+                KEY_STRICTNESS_LEVELS,
+                next.map { (pkg, level) -> "$pkg=${level.key}" }.toSet(),
+            )
+        }
+    }
+
+    /** Preview mode: log-only dismissals, no BACK press. */
+    fun setPreviewMode(enabled: Boolean) {
+        synchronized(lock) {
+            storage.writeBoolean(KEY_PREVIEW_MODE, enabled)
+            _previewMode.value = enabled
+        }
+    }
+
+    /** `"pkg=level"` pairs → map; malformed entries are dropped, never thrown. */
+    private fun decodeStrictness(raw: Set<String>): Map<String, Strictness> =
+        raw.mapNotNull { entry ->
+            val separator = entry.indexOf('=')
+            if (separator <= 0) return@mapNotNull null
+            val packageName = entry.substring(0, separator)
+            val level = Strictness.fromKey(entry.substring(separator + 1))
+            packageName to level
+        }.toMap()
 }

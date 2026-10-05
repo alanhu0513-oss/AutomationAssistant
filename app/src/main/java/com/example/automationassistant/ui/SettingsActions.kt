@@ -1,5 +1,6 @@
 package com.example.automationassistant.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -12,6 +13,7 @@ object SettingsActions {
             .onFailure { openAppDetails(context) }
     }
 
+    @SuppressLint("BatteryLife")
     fun openBatteryOptimizationSettings(context: Context) {
         val requested = runCatching {
             context.startActivity(

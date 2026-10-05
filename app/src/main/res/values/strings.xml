@@ -37,6 +37,15 @@
     <string name="capability_slow_label">The 1% Rule</string>
     <string name="capability_slow_body">If your phone is severely lagging or low on RAM while playing heavy games like Delta Force, the shield might need a fraction of a second to react.</string>
 
+    <!-- Per-game strictness (reaction level) -->
+    <string name="strictness_normal">Normal</string>
+    <string name="strictness_gentle">Gentle</string>
+    <string name="strictness_strict">Strict</string>
+
+    <!-- Preview mode -->
+    <string name="preview_title">Preview mode</string>
+    <string name="preview_body">Watch and log popups over your games without dismissing them — see exactly what the shield would block.</string>
+
     <!-- Shield activity log -->
     <string name="log_section_title">Shield Activity</string>
     <string name="log_empty">No popups dismissed yet — your shield is quiet.</string>

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -101,6 +102,7 @@ fun ShieldLogCard(
 
 @Composable
 private fun LogRow(entry: LogEntry, time: String) {
+    val tint = if (entry.preview) Neon.Amber else Neon.Green
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -109,13 +111,13 @@ private fun LogRow(entry: LogEntry, time: String) {
             modifier = Modifier
                 .size(28.dp)
                 .clip(CircleShape)
-                .background(Neon.Green.copy(alpha = 0.14f)),
+                .background(tint.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Filled.CheckCircle,
+                imageVector = if (entry.preview) Icons.Filled.Info else Icons.Filled.CheckCircle,
                 contentDescription = null,
-                tint = Neon.Green,
+                tint = tint,
                 modifier = Modifier.size(16.dp),
             )
         }
