@@ -38,6 +38,7 @@ import androidx.core.content.ContextCompat
 import com.example.automationassistant.BuildConfig
 import com.example.automationassistant.R
 import com.example.automationassistant.automation.AutomationState
+import com.example.automationassistant.automation.ShieldLog
 import com.example.automationassistant.automation.TargetStore
 import com.example.automationassistant.data.AppEntry
 import com.example.automationassistant.data.AppRepository
@@ -67,6 +68,8 @@ fun DashboardScreen(
     val engineError by AutomationState.lastError.collectAsState()
     val protectedApps by TargetStore.protectedApps.collectAsState()
     val notificationsPrompted by TargetStore.notificationsPrompted.collectAsState()
+    val serviceEverEnabled by TargetStore.serviceEverEnabled.collectAsState()
+    val shieldLogEntries by ShieldLog.entries.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -150,6 +153,12 @@ fun DashboardScreen(
                 )
             }
 
+            if (serviceEverEnabled && !isRunning) {
+                item(key = "offline") {
+                    OfflineBanner(onReenable = onOpenAccessibilitySettings)
+                }
+            }
+
             item(key = "status") {
                 StatusCard(
                     isRunning = isRunning,
@@ -164,6 +173,10 @@ fun DashboardScreen(
                     running = isRunning,
                     onOpenSettings = onOpenAccessibilitySettings,
                 )
+            }
+
+            item(key = "health") {
+                DeviceHealthCard(onOpenBatterySettings = onOpenBatterySettings)
             }
 
             item(key = "games_header") {
@@ -227,6 +240,13 @@ fun DashboardScreen(
 
             item(key = "capabilities") {
                 SystemCapabilitiesCard()
+            }
+
+            item(key = "log") {
+                ShieldLogCard(
+                    entries = shieldLogEntries,
+                    onClear = { ShieldLog.clear() },
+                )
             }
 
             updateInfo?.let { info ->

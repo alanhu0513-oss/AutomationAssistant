@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        TargetStore.hydrate(this)
 
         // Android 13+ runtime notification permission for the persistent
         // shield notification. Registered before the first frame so the

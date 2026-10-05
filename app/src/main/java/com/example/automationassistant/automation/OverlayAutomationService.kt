@@ -48,7 +48,6 @@ class OverlayAutomationService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         runCatching {
-            TargetStore.hydrate(this)
             homePackages = resolveHomePackages()
             exemptPackages = resolveExemptPackages()
             Log.i(TAG, "Resolved homes=$homePackages exempt=$exemptPackages")
@@ -66,6 +65,7 @@ class OverlayAutomationService : AccessibilityService() {
             )
             serviceActive = true
             AutomationState.setRunning(true)
+            TargetStore.markServiceEverEnabled()
             startShieldNotification()
             Log.i(TAG, "Shield engine connected")
         }.onFailure {
@@ -133,11 +133,41 @@ class OverlayAutomationService : AccessibilityService() {
         activeEngine.onFired(SystemClock.uptimeMillis())
         if (handled) {
             AutomationState.recordBlocked()
+            recordDismissal(
+                gamePackage = activeEngine.foregroundPackage,
+                overlayPackage = activeEngine.lastWindow?.packageName,
+            )
             Log.i(TAG, "Dismissed system layer over ${activeEngine.foregroundPackage}")
         } else {
             Log.w(TAG, "GLOBAL_ACTION_BACK was not handled")
         }
     }
+
+    /**
+     * Appends one entry to the local shield log — what popped up, over which
+     * game, and when. Failures here must never affect the dismissal itself.
+     */
+    private fun recordDismissal(gamePackage: String?, overlayPackage: String?) {
+        runCatching {
+            ShieldLog.record(
+                LogEntry(
+                    atEpochMillis = System.currentTimeMillis(),
+                    overlayPackage = overlayPackage.orEmpty(),
+                    overlayLabel = overlayPackage?.let(::labelOf)
+                        ?: getString(R.string.log_unknown_app),
+                    gameLabel = gamePackage?.let(::labelOf)
+                        ?: getString(R.string.log_unknown_app),
+                ),
+            )
+        }.onFailure { Log.w(TAG, "Failed to record dismissal", it) }
+    }
+
+    /** Display name for a package, falling back to the package itself. */
+    private fun labelOf(packageName: String): String = runCatching {
+        packageManager
+            .getApplicationLabel(packageManager.getApplicationInfo(packageName, 0))
+            .toString()
+    }.getOrDefault(packageName)
 
     // region Dynamic, brand-agnostic resolvers
 

@@ -80,6 +80,7 @@ object TargetStore {
     const val KEY_PROTECTED_APPS = "protected_apps"
     const val KEY_IS_FIRST_LAUNCH = "is_first_launch"
     const val KEY_NOTIFICATIONS_PROMPTED = "notifications_prompted"
+    const val KEY_SERVICE_EVER_ENABLED = "service_ever_enabled"
 
     private val lock = Any()
     private var storage: KeyValueStore = InMemoryKeyValueStore()
@@ -93,6 +94,9 @@ object TargetStore {
     private val _notificationsPrompted = MutableStateFlow(false)
     val notificationsPrompted: StateFlow<Boolean> = _notificationsPrompted.asStateFlow()
 
+    private val _serviceEverEnabled = MutableStateFlow(false)
+    val serviceEverEnabled: StateFlow<Boolean> = _serviceEverEnabled.asStateFlow()
+
     fun hydrate(context: Context) {
         hydrate(SharedPreferencesStore(context))
     }
@@ -103,6 +107,7 @@ object TargetStore {
             _protectedApps.value = store.readStringSet(KEY_PROTECTED_APPS)
             _isFirstLaunch.value = store.readBoolean(KEY_IS_FIRST_LAUNCH, default = true)
             _notificationsPrompted.value = store.readBoolean(KEY_NOTIFICATIONS_PROMPTED, default = false)
+            _serviceEverEnabled.value = store.readBoolean(KEY_SERVICE_EVER_ENABLED, default = false)
         }
     }
 
@@ -130,6 +135,14 @@ object TargetStore {
         synchronized(lock) {
             storage.writeBoolean(KEY_NOTIFICATIONS_PROMPTED, true)
             _notificationsPrompted.value = true
+        }
+    }
+
+    /** Remembered forever so the offline watchdog can tell "off" from "never on". */
+    fun markServiceEverEnabled() {
+        synchronized(lock) {
+            storage.writeBoolean(KEY_SERVICE_EVER_ENABLED, true)
+            _serviceEverEnabled.value = true
         }
     }
 }

@@ -37,6 +37,48 @@
     <string name="capability_slow_label">The 1% Rule</string>
     <string name="capability_slow_body">If your phone is severely lagging or low on RAM while playing heavy games like Delta Force, the shield might need a fraction of a second to react.</string>
 
+    <!-- Shield activity log -->
+    <string name="log_section_title">Shield Activity</string>
+    <string name="log_empty">No popups dismissed yet — your shield is quiet.</string>
+    <string name="log_clear">Clear</string>
+    <string name="log_unknown_app">System overlay</string>
+    <string name="log_entry_subtitle">Over %1$s · %2$s</string>
+    <plurals name="log_overflow">
+        <item quantity="one">+ %1$d earlier dismissal</item>
+        <item quantity="other">+ %1$d earlier dismissals</item>
+    </plurals>
+
+    <!-- Offline watchdog banner -->
+    <string name="offline_title">Shield offline</string>
+    <string name="offline_body">Android or your phone\'s battery manager turned off the accessibility service. The shield cannot protect your games until it is back on.</string>
+    <string name="offline_action">Re-enable</string>
+
+    <!-- Device health / OEM survival guide -->
+    <string name="health_title">Keep the Shield Alive</string>
+    <string name="health_detected">Detected device: %1$s</string>
+    <string name="health_intro">Phone brands hide battery settings in different places. Follow the path for your device — menu names vary slightly between OS versions.</string>
+    <string name="health_open_battery">Open battery settings</string>
+    <string name="brand_miui">Xiaomi / Redmi / POCO (MIUI &amp; HyperOS)</string>
+    <string name="brand_coloros">OPPO / realme / OnePlus (ColorOS)</string>
+    <string name="brand_oneui">Samsung (One UI)</string>
+    <string name="brand_funtouch">vivo / iQOO (Funtouch &amp; OriginOS)</string>
+    <string name="brand_stock">Stock Android / Pixel</string>
+    <string name="health_miui_1">Open the Security app → Battery → Battery saver</string>
+    <string name="health_miui_2">Find Gaming Shield and set it to No restrictions</string>
+    <string name="health_miui_3">Settings → Apps → Manage apps → Gaming Shield → turn on Autostart</string>
+    <string name="health_coloros_1">Settings → Apps → App management → Gaming Shield</string>
+    <string name="health_coloros_2">Battery usage → enable Allow background activity</string>
+    <string name="health_coloros_3">Launch settings → allow Auto-launch and Background running</string>
+    <string name="health_oneui_1">Settings → Battery → Background usage limits</string>
+    <string name="health_oneui_2">Open Sleeping apps → Never sleeping apps → add Gaming Shield</string>
+    <string name="health_oneui_3">Turn off Put unused apps to sleep for the shield</string>
+    <string name="health_funtouch_1">Open i Manager → Power save (or Settings → Battery)</string>
+    <string name="health_funtouch_2">Background power consumption → Gaming Shield → Allow</string>
+    <string name="health_funtouch_3">Acceleration whitelist → add Gaming Shield</string>
+    <string name="health_stock_1">Settings → Apps → Gaming Shield → Battery</string>
+    <string name="health_stock_2">Set Battery usage to Unrestricted</string>
+    <string name="health_stock_3">Disable Battery optimization so the shield is never dozed</string>
+
     <!-- Update notice (only shown when a new version exists) -->
     <string name="update_title">Update ready</string>
     <string name="update_body">Version %1$s has been released.</string>
