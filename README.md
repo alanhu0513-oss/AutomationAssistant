@@ -1,39 +1,43 @@
-# Aegis (Web Edition)
+# Aegis (Game Window Protection)
 
-**Stop surface-level game-time popups before they end your match.**
+[![Download APK](https://img.shields.io/badge/Download-Android%20APK%20(v2.2.0)-3DFFC4?style=for-the-badge&logo=android&logoColor=black)](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk)
+[![Release](https://img.shields.io/github/v/release/aidenauu04l7/aegis?color=3DFFC4&label=Latest%20Release&style=for-the-badge)](https://github.com/aidenauu04l7/aegis/releases/latest)
 
-Aegis is a web companion & simulation suite for Android game protection that implements intelligent window-stack monitoring and overlay dismissal logic.
-
-Midnight-slate glass interface. Neon-green pulse. Zero root. No personal data or screen content is ever read, stored, or transmitted.
-
----
-
-## Features Ported to React & TypeScript
-
-- 🎯 **Universal Popup Dismissal Rules Engine** — pure TypeScript port of `OverlayRules` and `OverlayEngine`, classifying window types, resolving dynamic system levels, foreground adoption, and per-game debounce.
-- 🎮 **Interactive Game Protection** — one-tap toggling for protected games with per-title reaction levels (Normal 400 ms, Gentle 1,000 ms, Strict 100 ms).
-- 🧪 **Live Shield Simulator Sandbox** — test real-time window events, popup dismissal rules, debouncing, and preview mode right in your browser.
-- ✨ **Signature Midnight Glass UI** — Material 3 midnight-slate dark theme, frosted glass cards with gradient hairline borders, and pulsing aura animations.
-- 🚀 **Onboarding Walkthrough** — three-slide interactive setup walkthrough with neon pagination pills and action steps.
-- 🛡️ **Device Survival Guide** — brand-specific battery guides (Xiaomi / MIUI / HyperOS, OPPO / ColorOS, Samsung One UI, vivo / Funtouch, Stock Android) with interactive brand selector.
-- 📜 **Shield Activity Proof-of-Work Log** — capped, local-first persistent activity log with timestamp, preview badges, and clear action.
-- 🔔 **Honest by Design (Capabilities & Limits)** — permanent transparency card explaining standard popup dismissal, OS security boundaries, and the 1% latency rule.
-- 👁️ **Preview Mode** — log would-be dismissals without executing the back action.
-- 🌍 **Bilingual Support** — complete English & 简体中文 localization with instant language switching.
-- 📡 **GitHub Release Checker** — silently checks for updates against GitHub Releases using semantic version comparison.
+> ⚠️ **IMPORTANT: HOW TO DOWNLOAD THE ACTUAL APP (NOT SOURCE CODE)**
+> 
+> * **DO NOT** click the green `<> Code` ➔ `Download ZIP` button on GitHub unless you are a software developer editing TypeScript source code.
+> * **TO INSTALL THE APP ON YOUR PHONE**: Click the **[Download Android APK (v2.2.0)](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk)** button above or go to the **[Releases](https://github.com/aidenauu04l7/aegis/releases/latest)** section on the right side of this repository page and download `app-debug.apk` / `aegis-shield-v2.2.0.apk`.
 
 ---
 
-## Project Structure
+## 📱 Quick 3-Step Phone Installation
 
-- `src/automation/` — ported decision rules, debounced state machine, persistent target store, capped log, and state flows.
-- `src/data/` — OEM battery guides, game catalog & custom app manager, search filter, GitHub release checker.
-- `src/components/` — GlassCard, PulsingAura, StatusCard, ShieldToggle, GamesSection, DeviceHealthCard, InteractiveSimulator, ShieldLogCard, Onboarding, etc.
-- `src/i18n/` — translations for English and 简体中文.
+1. **Download APK**: Tap [Download app-debug.apk](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk) on your Android device.
+2. **Install**: Tap the downloaded file in your browser's download manager. When prompted, select **"Allow installation from this source"**.
+3. **Turn on Shield Engine**:
+   - Open **Aegis**.
+   - Tap **Activate Shield** and allow the **Accessibility Service** permission under *Installed Services* / *Accessibility*.
+   - Use the in-app **Quick Fix** utility to exempt Aegis from Android Battery Optimizations.
 
 ---
 
-## Development
+## 🌟 Features
+
+- 🎯 **Universal Popup Dismissal Engine** — Automatic detection and instant simulated `Back` dismissal for surface-level OEM game timer popups (Xiaomi, vivo, OPPO, Samsung).
+- ⚡ **Quick Fix Battery Optimization Utility** — Direct Android Intent shortcuts to exclude the app from background sleep and Doze mode.
+- 🎮 **Per-Game Reaction Control** — Custom debouncing profiles (Normal 400ms, Gentle 1,000ms, Strict 100ms).
+- 🧪 **Interactive Web Simulation Suite & WebAPK** — Test all window event state transitions and install as a standalone home screen app.
+- 🛡️ **Zero Root & 100% Privacy** — Operates strictly in standard user-space with no analytics, no ads, and no network transmission.
+
+---
+
+## 📦 Automated APK CI Builds
+
+Every GitHub release and push to `main` automatically compiles a signed debug `.apk` binary using GitHub Actions (`.github/workflows/build-apk.yml`). The compiled binaries are published under [GitHub Releases](https://github.com/aidenauu04l7/aegis/releases).
+
+---
+
+## 💻 Web Development
 
 ```bash
 npm install

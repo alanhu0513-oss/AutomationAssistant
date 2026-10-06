@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Globe, RotateCcw, Download } from 'lucide-react';
 import { Locale } from '../i18n/translations';
+import { PWAInstallButton } from './PWAInstallButton';
 
 export type NavTab = 'shield' | 'games' | 'simulator' | 'guide';
 
@@ -69,14 +70,16 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
 
-        {/* Zone 3: Primary Actions (Download APK + Locale + Replay) */}
+        {/* Zone 3: Primary Actions (Download APK + PWA Install + Locale + Replay) */}
         <div className="flex items-center gap-2 shrink-0">
+          <PWAInstallButton locale={locale} />
+
           <button
             onClick={onOpenDownloadApk}
             className="px-3 py-1.5 rounded-xl bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-[#3DFFC4]/20 active:scale-95 transition-all"
           >
             <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden xs:inline">{locale === 'zh' ? '下载 APK' : 'Get APK'}</span>
+            <span className="hidden xs:inline">{locale === 'zh' ? '下载 APK' : 'Download APK'}</span>
           </button>
 
           <button

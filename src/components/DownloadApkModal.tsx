@@ -1,6 +1,17 @@
 import React from 'react';
-import { Download, ExternalLink, X, Smartphone, ShieldCheck, CheckCircle2, GitBranch } from 'lucide-react';
+import {
+  Download,
+  ExternalLink,
+  X,
+  Smartphone,
+  ShieldCheck,
+  AlertCircle,
+  Sparkles,
+  FileCode,
+  CheckCircle2,
+} from 'lucide-react';
 import { translations, Locale } from '../i18n/translations';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface DownloadApkModalProps {
   isOpen: boolean;
@@ -16,26 +27,50 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
   onShowToast,
 }) => {
   const t = translations[locale];
+  const { isInstallable, isInstalled, install } = usePWAInstall();
 
   if (!isOpen) return null;
 
   const githubRepoUrl = 'https://github.com/aidenauu04l7/aegis';
   const latestReleaseApkUrl = `${githubRepoUrl}/releases/latest/download/app-debug.apk`;
-  const githubActionsUrl = `${githubRepoUrl}/actions`;
+  const directLocalApkUrl = '/aegis-shield-v2.2.0.apk';
 
-  const handleDownloadClick = () => {
-    // Trigger download of release APK
+  const handleDirectDownload = () => {
+    const link = document.createElement('a');
+    link.href = directLocalApkUrl;
+    link.download = 'aegis-shield-v2.2.0.apk';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    onShowToast(
+      locale === 'zh'
+        ? '正在直接下载 Aegis.apk 原生安装包…'
+        : 'Downloading aegis-shield-v2.2.0.apk binary…'
+    );
+  };
+
+  const handleGithubReleaseDownload = () => {
     window.open(latestReleaseApkUrl, '_blank');
     onShowToast(
       locale === 'zh'
-        ? '正在从 GitHub Releases 启动 APK 下载…'
-        : 'Starting APK download from GitHub Releases…'
+        ? '正在跳转至 GitHub Releases 下载最新 APK…'
+        : 'Opening GitHub Releases direct APK link…'
     );
+  };
+
+  const handleWebAPKInstall = async () => {
+    if (install) {
+      const ok = await install();
+      if (ok) {
+        onShowToast(locale === 'zh' ? '应用正在安装到桌面…' : 'Installing app to home screen…');
+      }
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-[#0D121B] border border-white/[0.12] rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg bg-[#0D121B] border border-white/[0.12] rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center gap-3">
@@ -44,10 +79,12 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                {t.download_apk_title}
+                {locale === 'zh' ? '下载 Android 原生应用 (APK)' : 'Download Complete Android App (.APK)'}
               </h3>
               <p className="text-xs text-[#93A1AF]">
-                {locale === 'zh' ? '在手机上安装原生 APK，实现全自动后台守护' : 'Install native Android APK for full real-time background protection'}
+                {locale === 'zh'
+                  ? '获取编译好的可安装 Android 安装包，无需编译代码'
+                  : 'Pre-compiled installable APK binary (No source code required)'}
               </p>
             </div>
           </div>
@@ -60,97 +97,126 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
           </button>
         </div>
 
-        {/* Primary Download Button */}
-        <div className="space-y-3">
-          <button
-            onClick={handleDownloadClick}
-            className="w-full py-4 px-6 rounded-2xl bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-[#3DFFC4]/20 active:scale-98 transition-all"
-          >
-            <Download className="w-5 h-5 stroke-[2.5]" />
-            <span>{locale === 'zh' ? '立即下载 Aegis.apk (v2.2.0)' : 'Download Aegis.apk (v2.2.0)'}</span>
-          </button>
-
-          <p className="text-[11px] text-[#93A1AF] text-center">
+        {/* Warning / Clarification about GitHub Source Code vs APK Binary */}
+        <div className="p-3.5 rounded-2xl bg-[#090E17] border border-amber-500/30 text-xs space-y-1.5">
+          <div className="flex items-center gap-2 font-bold text-[#FBBF24]">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>
+              {locale === 'zh'
+                ? '提示：请下载 .APK 安装包，而非代码 ZIP'
+                : 'Important: Download compiled .APK, not Source Code ZIP'}
+            </span>
+          </div>
+          <p className="text-[#93A1AF] text-[11px] leading-relaxed">
             {locale === 'zh'
-              ? '编译自 GitHub Actions CI 工作流 · 原生 Android 10+ 架构 · 零广告 零隐私收集'
-              : 'Built via GitHub Actions CI workflow · Android 10+ Native · Zero ads & telemetry'}
+              ? '在 GitHub 网页上点击绿色「Code → Download ZIP」仅会下载未编译的前端代码。要直接在 Android 手机上安装使用，请点击下方「直接下载 APK 安装包」或「GitHub Releases 发布包」。'
+              : 'Clicking "Code → Download ZIP" on GitHub downloads raw uncompiled source files. To install directly on your phone, use the direct APK download buttons below.'}
           </p>
         </div>
 
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          {/* Direct In-App APK Download */}
+          <button
+            onClick={handleDirectDownload}
+            className="w-full py-3.5 px-5 rounded-2xl bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-[#3DFFC4]/20 active:scale-98 transition-all"
+          >
+            <Download className="w-5 h-5 stroke-[2.5]" />
+            <span>
+              {locale === 'zh'
+                ? '直接下载 aegis-shield-v2.2.0.apk (即下即装)'
+                : 'Direct Download aegis-shield-v2.2.0.apk'}
+            </span>
+          </button>
+
+          {/* GitHub Releases Link */}
+          <button
+            onClick={handleGithubReleaseDownload}
+            className="w-full py-3 px-5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] font-semibold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all"
+          >
+            <ExternalLink className="w-4 h-4 text-[#3DFFC4]" />
+            <span>
+              {locale === 'zh'
+                ? '从 GitHub Releases 下载 app-debug.apk'
+                : 'Download from GitHub Releases (app-debug.apk)'}
+            </span>
+          </button>
+
+          {/* WebAPK / Instant Home screen PWA Option */}
+          {isInstallable && (
+            <button
+              onClick={handleWebAPKInstall}
+              className="w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 text-blue-300 border border-blue-400/30 font-semibold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-blue-300" />
+              <span>
+                {locale === 'zh'
+                  ? '一键安装为手机桌面 App (WebAPK)'
+                  : 'Install Instantly as Android App (WebAPK)'}
+              </span>
+            </button>
+          )}
+        </div>
+
         {/* 3 Step Installation Walkthrough */}
-        <div className="space-y-3 pt-2">
+        <div className="space-y-2.5 pt-2">
           <h4 className="text-xs font-bold text-white flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#3DFFC4]" />
-            <span>{locale === 'zh' ? '安装与激活步骤' : 'Installation & Setup Guide'}</span>
+            <span>{locale === 'zh' ? '手机安装指南' : 'Android Setup Instructions'}</span>
           </h4>
 
-          <div className="space-y-2.5">
-            <div className="p-3.5 rounded-xl bg-[#090D14] border border-white/[0.06] flex items-start gap-3">
-              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 border border-[#3DFFC4]/30">
+          <div className="space-y-2 text-xs">
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 border border-[#3DFFC4]/30">
                 1
               </span>
-              <div className="text-xs space-y-0.5">
-                <span className="font-semibold text-white block">
-                  {locale === 'zh' ? '下载并允许未知来源安装' : 'Download & Allow Unknown Sources'}
-                </span>
-                <span className="text-[#93A1AF] text-[11px] leading-relaxed block">
-                  {locale === 'zh'
-                    ? '下载完成后点击通知栏中的 APK 文件，根据系统提示允许浏览器安装应用。'
-                    : 'Tap the downloaded APK file in Downloads or notifications, and grant permission to install.'}
-                </span>
-              </div>
+              <span className="text-[#93A1AF] text-[11px] leading-relaxed pt-0.5">
+                {locale === 'zh'
+                  ? '下载完成后点击通知栏中的 APK 文件，根据系统提示选择「允许此来源的应用」。'
+                  : 'After downloading, tap the .apk file in your browser downloads and allow "Install from this source".'}
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#090D14] border border-white/[0.06] flex items-start gap-3">
-              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 border border-[#3DFFC4]/30">
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 border border-[#3DFFC4]/30">
                 2
               </span>
-              <div className="text-xs space-y-0.5">
-                <span className="font-semibold text-white block">
-                  {locale === 'zh' ? '开启「无障碍服务」' : 'Enable Accessibility Service'}
-                </span>
-                <span className="text-[#93A1AF] text-[11px] leading-relaxed block">
-                  {locale === 'zh'
-                    ? '打开应用后点击启动，在系统「已下载的应用 / 无障碍」中找到 Aegis 并开启。'
-                    : 'Launch Aegis on phone, tap Activate, and turn on the service in Accessibility Settings.'}
-                </span>
-              </div>
+              <span className="text-[#93A1AF] text-[11px] leading-relaxed pt-0.5">
+                {locale === 'zh'
+                  ? '在系统「设置 → 无障碍」中找到「Aegis / Shield 引擎」并开启。'
+                  : 'Open phone Settings → Accessibility → turn ON "Aegis / Shield Engine".'}
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#090D14] border border-white/[0.06] flex items-start gap-3">
-              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 border border-[#3DFFC4]/30">
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-lg bg-[#3DFFC4]/15 text-[#3DFFC4] font-bold text-xs flex items-center justify-center shrink-0 border border-[#3DFFC4]/30">
                 3
               </span>
-              <div className="text-xs space-y-0.5">
-                <span className="font-semibold text-white block">
-                  {locale === 'zh' ? '运行「一键修复」免除电池查杀' : 'Apply Quick Fix Battery Exemption'}
-                </span>
-                <span className="text-[#93A1AF] text-[11px] leading-relaxed block">
-                  {locale === 'zh'
-                    ? '在应用内使用 Quick Fix 功能，将 Aegis 设置为不受电量优化限制，防止后台挂起。'
-                    : 'Use the Quick Fix button to whitelist Aegis from OS battery savers for uninterrupted gaming.'}
-                </span>
-              </div>
+              <span className="text-[#93A1AF] text-[11px] leading-relaxed pt-0.5">
+                {locale === 'zh'
+                  ? '使用应用内的「一键修复」免除电池优化限制，保障后台常驻。'
+                  : 'Use Quick Fix inside the app to exempt Aegis from OS battery optimization killers.'}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* GitHub Repository Links */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/[0.06]">
+        {/* Footer */}
+        <div className="pt-2 flex items-center justify-between border-t border-white/[0.06]">
           <a
-            href={githubActionsUrl}
+            href={githubRepoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-semibold text-[#93A1AF] hover:text-white flex items-center gap-1.5 transition-colors"
           >
-            <GitBranch className="w-3.5 h-3.5 text-[#3DFFC4]" />
-            <span>GitHub Actions CI Builds</span>
+            <FileCode className="w-3.5 h-3.5 text-[#3DFFC4]" />
+            <span>GitHub Repository</span>
             <ExternalLink className="w-3 h-3" />
           </a>
 
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-semibold active:scale-95 transition-all w-full sm:w-auto"
+            className="px-5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-semibold active:scale-95 transition-all"
           >
             {locale === 'zh' ? '关闭' : 'Close'}
           </button>
