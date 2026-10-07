@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header, NavTab } from './components/Header';
 import { StatusCard } from './components/StatusCard';
+import { DirectApkDownloadCard } from './components/DirectApkDownloadCard';
 import { ShieldToggle } from './components/ShieldToggle';
 import { OfflineBanner } from './components/OfflineBanner';
 import { BatteryStatusBanner } from './components/BatteryStatusBanner';
@@ -215,6 +216,12 @@ export const App: React.FC = () => {
                   }}
                 />
               )}
+
+              {/* Direct APK Download Hero Card */}
+              <DirectApkDownloadCard
+                locale={locale}
+                onShowToast={showToast}
+              />
 
               {/* Centerpiece Hero Status */}
               <StatusCard

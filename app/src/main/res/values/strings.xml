@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Aegis</string>
+    <string name="accessibility_service_label">Aegis Shield Engine</string>
+    <string name="accessibility_service_description">Monitors foreground game windows and automatically dismisses surface-level popup timers, system dialogs, and overlays. Operates strictly offline with zero root and zero telemetry.</string>
+</resources>

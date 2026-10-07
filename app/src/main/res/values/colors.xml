@@ -1,0 +1,8 @@
+<resources>
+    <color name="bg_midnight">#07090E</color>
+    <color name="neon_green">#3DFFC4</color>
+    <color name="neon_teal">#2DD4BF</color>
+    <color name="slate_dark">#0F141D</color>
+    <color name="text_primary">#E2E8F0</color>
+    <color name="text_muted">#93A1AF</color>
+</resources>
