@@ -1,18 +1,20 @@
 # Aegis (Game Window Protection)
 
-[![Download APK](https://img.shields.io/badge/Download-Android%20APK%20(v2.2.0)-3DFFC4?style=for-the-badge&logo=android&logoColor=black)](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk)
-[![Release](https://img.shields.io/github/v/release/aidenauu04l7/aegis?color=3DFFC4&label=Latest%20Release&style=for-the-badge)](https://github.com/aidenauu04l7/aegis/releases/latest)
+[![Download APK](https://img.shields.io/badge/Direct%20Download-Android%20APK%20(v2.2.0)-3DFFC4?style=for-the-badge&logo=android&logoColor=black)](https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk)
+[![GitHub Raw APK](https://img.shields.io/badge/Download-app--debug.apk-2DD4BF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/aidenauu04l7/aegis/raw/main/app-debug.apk)
 
-> ⚠️ **IMPORTANT: HOW TO DOWNLOAD THE ACTUAL APP (NOT SOURCE CODE)**
+> 📱 **HOW TO INSTALL ON YOUR PHONE (DIRECT FILE DOWNLOAD):**
 > 
-> * **DO NOT** click the green `<> Code` ➔ `Download ZIP` button on GitHub unless you are a software developer editing TypeScript source code.
-> * **TO INSTALL THE APP ON YOUR PHONE**: Click the **[Download Android APK (v2.2.0)](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk)** button above or go to the **[Releases](https://github.com/aidenauu04l7/aegis/releases/latest)** section on the right side of this repository page and download `app-debug.apk` / `aegis-shield-v2.2.0.apk`.
+> * **[Click here to download `aegis-shield-v2.2.0.apk`](https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk)** (Direct from GitHub repository `main` branch)
+> * **[Click here to download `app-debug.apk`](https://github.com/aidenauu04l7/aegis/raw/main/release/app-debug.apk)** (Release folder mirror)
+> 
+> *Note: The `.apk` file is stored directly in this repository root and `/release/` folder so you don't need to build from source code.*
 
 ---
 
 ## 📱 Quick 3-Step Phone Installation
 
-1. **Download APK**: Tap [Download app-debug.apk](https://github.com/aidenauu04l7/aegis/releases/latest/download/app-debug.apk) on your Android device.
+1. **Download APK**: Tap **[aegis-shield-v2.2.0.apk](https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk)** directly on your Android phone.
 2. **Install**: Tap the downloaded file in your browser's download manager. When prompted, select **"Allow installation from this source"**.
 3. **Turn on Shield Engine**:
    - Open **Aegis**.
@@ -31,9 +33,12 @@
 
 ---
 
-## 📦 Automated APK CI Builds
+## 📁 Repository APK Files
 
-Every GitHub release and push to `main` automatically compiles a signed debug `.apk` binary using GitHub Actions (`.github/workflows/build-apk.yml`). The compiled binaries are published under [GitHub Releases](https://github.com/aidenauu04l7/aegis/releases).
+| File Name | Direct Download Link | Location |
+| :--- | :--- | :--- |
+| **`aegis-shield-v2.2.0.apk`** | [Download](https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk) | Root `/aegis-shield-v2.2.0.apk` |
+| **`app-debug.apk`** | [Download](https://github.com/aidenauu04l7/aegis/raw/main/release/app-debug.apk) | `/release/app-debug.apk` |
 
 ---
 

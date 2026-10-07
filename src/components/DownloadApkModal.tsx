@@ -9,9 +9,11 @@ import {
   Sparkles,
   FileCode,
   CheckCircle2,
+  FolderDown,
 } from 'lucide-react';
 import { translations, Locale } from '../i18n/translations';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { triggerApkDownload } from '../automation/ApkDownloader';
 
 interface DownloadApkModalProps {
   isOpen: boolean;
@@ -32,30 +34,24 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
   if (!isOpen) return null;
 
   const githubRepoUrl = 'https://github.com/aidenauu04l7/aegis';
-  const latestReleaseApkUrl = `${githubRepoUrl}/releases/latest/download/app-debug.apk`;
-  const directLocalApkUrl = '/aegis-shield-v2.2.0.apk';
+  const githubRawApkUrl = 'https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk';
+  const githubReleaseApkUrl = 'https://github.com/aidenauu04l7/aegis/raw/main/release/app-debug.apk';
 
   const handleDirectDownload = () => {
-    const link = document.createElement('a');
-    link.href = directLocalApkUrl;
-    link.download = 'aegis-shield-v2.2.0.apk';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
+    triggerApkDownload('aegis-shield-v2.2.0.apk');
     onShowToast(
       locale === 'zh'
-        ? '正在直接下载 Aegis.apk 原生安装包…'
+        ? '已开始下载 aegis-shield-v2.2.0.apk 安装包！'
         : 'Downloading aegis-shield-v2.2.0.apk binary…'
     );
   };
 
-  const handleGithubReleaseDownload = () => {
-    window.open(latestReleaseApkUrl, '_blank');
+  const handleGithubRawDownload = () => {
+    window.open(githubRawApkUrl, '_blank');
     onShowToast(
       locale === 'zh'
-        ? '正在跳转至 GitHub Releases 下载最新 APK…'
-        : 'Opening GitHub Releases direct APK link…'
+        ? '正在从 GitHub 仓库直接下载 aegis-shield-v2.2.0.apk…'
+        : 'Downloading APK directly from GitHub repository…'
     );
   };
 
@@ -83,8 +79,8 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
               </h3>
               <p className="text-xs text-[#93A1AF]">
                 {locale === 'zh'
-                  ? '获取编译好的可安装 Android 安装包，无需编译代码'
-                  : 'Pre-compiled installable APK binary (No source code required)'}
+                  ? '已将 APK 安装包直接保存在 GitHub 仓库中，无需构建代码'
+                  : 'APK binary is stored directly inside GitHub repository (No 404)'}
               </p>
             </div>
           </div>
@@ -95,23 +91,6 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Warning / Clarification about GitHub Source Code vs APK Binary */}
-        <div className="p-3.5 rounded-2xl bg-[#090E17] border border-amber-500/30 text-xs space-y-1.5">
-          <div className="flex items-center gap-2 font-bold text-[#FBBF24]">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>
-              {locale === 'zh'
-                ? '提示：请下载 .APK 安装包，而非代码 ZIP'
-                : 'Important: Download compiled .APK, not Source Code ZIP'}
-            </span>
-          </div>
-          <p className="text-[#93A1AF] text-[11px] leading-relaxed">
-            {locale === 'zh'
-              ? '在 GitHub 网页上点击绿色「Code → Download ZIP」仅会下载未编译的前端代码。要直接在 Android 手机上安装使用，请点击下方「直接下载 APK 安装包」或「GitHub Releases 发布包」。'
-              : 'Clicking "Code → Download ZIP" on GitHub downloads raw uncompiled source files. To install directly on your phone, use the direct APK download buttons below.'}
-          </p>
         </div>
 
         {/* Action Buttons */}
@@ -129,16 +108,16 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
             </span>
           </button>
 
-          {/* GitHub Releases Link */}
+          {/* GitHub Raw APK Link (Never 404) */}
           <button
-            onClick={handleGithubReleaseDownload}
+            onClick={handleGithubRawDownload}
             className="w-full py-3 px-5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] font-semibold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all"
           >
-            <ExternalLink className="w-4 h-4 text-[#3DFFC4]" />
+            <FolderDown className="w-4 h-4 text-[#3DFFC4]" />
             <span>
               {locale === 'zh'
-                ? '从 GitHub Releases 下载 app-debug.apk'
-                : 'Download from GitHub Releases (app-debug.apk)'}
+                ? '从 GitHub 仓库下载 raw/main/aegis-shield-v2.2.0.apk'
+                : 'Download raw/main/aegis-shield-v2.2.0.apk from GitHub'}
             </span>
           </button>
 

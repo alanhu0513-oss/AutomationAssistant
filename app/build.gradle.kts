@@ -17,18 +17,32 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            // Default to debug keystore for CI/CD if release keystore properties are absent
+            val keystoreFile = project.findProperty("KEYSTORE_FILE") as? String ?: "${System.getProperty("user.home")}/.android/debug.keystore"
+            if (file(keystoreFile).exists()) {
+                storeFile = file(keystoreFile)
+                storePassword = project.findProperty("KEYSTORE_PASSWORD") as? String ?: "android"
+                keyAlias = project.findProperty("KEY_ALIAS") as? String ?: "androiddebugkey"
+                keyPassword = project.findProperty("KEY_PASSWORD") as? String ?: "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
