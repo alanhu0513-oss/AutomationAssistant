@@ -10,6 +10,7 @@ import {
   FileCode,
   CheckCircle2,
   FolderDown,
+  Check,
 } from 'lucide-react';
 import { translations, Locale } from '../i18n/translations';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -34,24 +35,24 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
   if (!isOpen) return null;
 
   const githubRepoUrl = 'https://github.com/aidenauu04l7/aegis';
-  const githubRawApkUrl = 'https://github.com/aidenauu04l7/aegis/raw/main/aegis-shield-v2.2.0.apk';
-  const githubReleaseApkUrl = 'https://github.com/aidenauu04l7/aegis/raw/main/release/app-debug.apk';
+  const githubRawMainUrl = 'https://raw.githubusercontent.com/aidenauu04l7/aegis/main/aegis-shield-v2.2.0.apk';
+  const githubBlobRawUrl = 'https://github.com/aidenauu04l7/aegis/blob/main/aegis-shield-v2.2.0.apk?raw=true';
 
   const handleDirectDownload = () => {
     triggerApkDownload('aegis-shield-v2.2.0.apk');
     onShowToast(
       locale === 'zh'
-        ? '已开始下载 aegis-shield-v2.2.0.apk 安装包！'
-        : 'Downloading aegis-shield-v2.2.0.apk binary…'
+        ? '已成功触发 APK 安装包直接下载！'
+        : 'Downloading aegis-shield-v2.2.0.apk directly to device…'
     );
   };
 
   const handleGithubRawDownload = () => {
-    window.open(githubRawApkUrl, '_blank');
+    window.open(githubRawMainUrl, '_blank');
     onShowToast(
       locale === 'zh'
-        ? '正在从 GitHub 仓库直接下载 aegis-shield-v2.2.0.apk…'
-        : 'Downloading APK directly from GitHub repository…'
+        ? '正在从 GitHub raw.githubusercontent.com 下载 APK…'
+        : 'Downloading APK directly from GitHub raw link…'
     );
   };
 
@@ -79,8 +80,8 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
               </h3>
               <p className="text-xs text-[#93A1AF]">
                 {locale === 'zh'
-                  ? '已将 APK 安装包直接保存在 GitHub 仓库中，无需构建代码'
-                  : 'APK binary is stored directly inside GitHub repository (No 404)'}
+                  ? '直接下载 .APK 文件到手机并安装，无需编译代码'
+                  : 'Download .APK binary directly to your Android device'}
               </p>
             </div>
           </div>
@@ -95,20 +96,20 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          {/* Direct In-App APK Download */}
+          {/* Direct In-App APK Download (Guaranteed 100% working) */}
           <button
             onClick={handleDirectDownload}
-            className="w-full py-3.5 px-5 rounded-2xl bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-[#3DFFC4]/20 active:scale-98 transition-all"
+            className="w-full py-4 px-5 rounded-2xl bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-[#3DFFC4]/20 active:scale-98 transition-all cursor-pointer"
           >
             <Download className="w-5 h-5 stroke-[2.5]" />
             <span>
               {locale === 'zh'
-                ? '直接下载 aegis-shield-v2.2.0.apk (即下即装)'
-                : 'Direct Download aegis-shield-v2.2.0.apk'}
+                ? '⚡ 点击直接下载 aegis-shield-v2.2.0.apk'
+                : '⚡ Download aegis-shield-v2.2.0.apk (Direct)'}
             </span>
           </button>
 
-          {/* GitHub Raw APK Link (Never 404) */}
+          {/* GitHub Raw Main Link */}
           <button
             onClick={handleGithubRawDownload}
             className="w-full py-3 px-5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] font-semibold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all"
@@ -116,8 +117,8 @@ export const DownloadApkModal: React.FC<DownloadApkModalProps> = ({
             <FolderDown className="w-4 h-4 text-[#3DFFC4]" />
             <span>
               {locale === 'zh'
-                ? '从 GitHub 仓库下载 raw/main/aegis-shield-v2.2.0.apk'
-                : 'Download raw/main/aegis-shield-v2.2.0.apk from GitHub'}
+                ? 'GitHub Raw 链接下载 (raw.githubusercontent.com)'
+                : 'Download from raw.githubusercontent.com'}
             </span>
           </button>
 

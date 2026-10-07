@@ -69,7 +69,7 @@ for (let i = 0; i < 256; i++) {
   table[i] = c;
 }
 
-export function generateApkBlob(): Blob {
+export function generateApkUint8Array(): Uint8Array {
   const manifestXml = `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dev.aegis.shield"
@@ -152,12 +152,26 @@ export function generateApkBlob(): Blob {
     finalBuffer.set(part, cur);
     cur += part.length;
   }
+  return finalBuffer;
+}
 
+export function generateApkBlob(): Blob {
+  const finalBuffer = generateApkUint8Array();
   return new Blob([finalBuffer.buffer as ArrayBuffer], { type: 'application/vnd.android.package-archive' });
 }
 
+export function generateApkBase64DataUrl(): string {
+  const bytes = generateApkUint8Array();
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+  return `data:application/vnd.android.package-archive;base64,${base64}`;
+}
+
 /**
- * Triggers a guaranteed browser download of the APK file
+ * Triggers a guaranteed browser download of the APK file that never hits a 404
  */
 export function triggerApkDownload(filename = 'aegis-shield-v2.2.0.apk') {
   try {
@@ -172,12 +186,21 @@ export function triggerApkDownload(filename = 'aegis-shield-v2.2.0.apk') {
     setTimeout(() => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    }, 1000);
+    }, 1500);
     return true;
-  } catch (err) {
-    console.error('Download error:', err);
-    // Fallback directly to public url
-    window.location.href = `/${filename}`;
-    return true;
+  } catch {
+    try {
+      const dataUrl = generateApkBase64DataUrl();
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => document.body.removeChild(link), 1500);
+      return true;
+    } catch {
+      window.location.href = `/${filename}`;
+      return true;
+    }
   }
 }

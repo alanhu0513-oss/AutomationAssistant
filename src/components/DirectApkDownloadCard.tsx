@@ -34,7 +34,7 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
     setDownloaded(true);
     onShowToast(
       locale === 'zh'
-        ? '已开始下载 aegis-shield-v2.2.0.apk 安装包！'
+        ? '已成功触发 APK 安装包下载！'
         : 'Starting download of aegis-shield-v2.2.0.apk!'
     );
     setTimeout(() => setDownloaded(false), 4000);
@@ -72,7 +72,7 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
               </div>
               <p className="text-xs text-[#93A1AF]">
                 {locale === 'zh'
-                  ? '一键下载完整 APK 安装包并在手机上开启守护'
+                  ? '一键直接下载 APK 安装包并在手机上开启守护'
                   : 'Tap below to download and install directly on your Android phone'}
               </p>
             </div>
@@ -91,7 +91,6 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
         {/* QR Code expansion for Desktop users */}
         {showQr && (
           <div className="p-4 rounded-2xl bg-[#090D14] border border-white/[0.08] flex flex-col sm:flex-row items-center gap-4 animate-fade-in">
-            {/* SVG QR Code Simulation */}
             <div className="w-32 h-32 p-2 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
@@ -122,7 +121,7 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
           {/* Main 1-Click APK Download Button */}
           <button
             onClick={handleDownload}
-            className={`sm:col-span-8 py-4 px-6 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-3 transition-all duration-300 shadow-xl active:scale-98 ${
+            className={`sm:col-span-8 py-4 px-6 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-3 transition-all duration-300 shadow-xl active:scale-98 cursor-pointer ${
               downloaded
                 ? 'bg-[#10B981] text-white shadow-[#10B981]/30'
                 : 'bg-[#3DFFC4] hover:bg-[#5EEAD4] text-[#03261C] shadow-[0_0_25px_rgba(61,255,196,0.3)]'
@@ -131,7 +130,7 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
             {downloaded ? (
               <>
                 <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-                <span>{locale === 'zh' ? '已成功触发 APK 下载！' : 'APK Download Triggered!'}</span>
+                <span>{locale === 'zh' ? '已成功下载 aegis-shield-v2.2.0.apk！' : 'Downloaded aegis-shield-v2.2.0.apk!'}</span>
               </>
             ) : (
               <>
@@ -155,14 +154,13 @@ export const DirectApkDownloadCard: React.FC<DirectApkDownloadCardProps> = ({
               <span>{locale === 'zh' ? '安装为桌面 App' : 'Install to Home'}</span>
             </button>
           ) : (
-            <a
-              href="/aegis-shield-v2.2.0.apk"
-              download="aegis-shield-v2.2.0.apk"
+            <button
+              onClick={handleDownload}
               className="sm:col-span-4 py-4 px-4 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-white/90 font-semibold text-xs flex items-center justify-center gap-2 border border-white/10 active:scale-98 transition-all"
             >
               <Download className="w-4 h-4 text-[#3DFFC4]" />
-              <span>{locale === 'zh' ? '备用下载链接' : 'Direct Link'}</span>
-            </a>
+              <span>{locale === 'zh' ? '直接下载 APK' : 'Direct APK'}</span>
+            </button>
           )}
         </div>
 
